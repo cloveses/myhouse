@@ -10,12 +10,6 @@ def check(data):
 
 def get_data(filename,headlines=5):
 
-    while True:
-        k = input("Enter an integer between 0 and 60:")
-        k = check(k)
-        if k is not None:
-            break
-
     years = []
     temperatures = []
 
@@ -27,13 +21,19 @@ def get_data(filename,headlines=5):
         print('The file %s could not be opened.' % filename)
         return
 
+    while True:
+        k = input("Enter an integer between 0 and 60:")
+        k = check(k)
+        if k is not None:
+            break
+
     if datas:
         datas = [line.strip() for line in datas]
         for data in datas:
             year,temperature = data.split(',')
             years.append(year)
             temperatures.append(float(temperature))
-        return k,[years,temperatures]
+        return k,years,temperatures
 
 def save(datas,filename='tempAnomaly.txt'):
     with open(filename,'w') as f:
@@ -46,9 +46,9 @@ def main():
         filename = input('Temperature anomaly filename:')
         if filename:
             break
-    k,datas = get_data(filename)
-    if datas:
-        years,temperatures = datas
+    res = get_data(filename)
+    if res:
+        k,years,temperatures = res
         results = [('Year','Value'),]
         for i in range(k,len(years)-k):
             temps = temperatures[i-k:i+k+1]
