@@ -10,7 +10,10 @@ def get_one_page(url):
     Content = content.findAll('span',{'class':'short'})
     Content2 = content.findAll('a',{'href':re.compile('^https://www.douban.com/people'),'class':''})
     for a,b in zip(Content2,Content):
-        print(a.string,b.string)
+        try:
+            print(a.string,b.string)
+        except:
+            pass
 
     return Content
 
