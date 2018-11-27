@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup as bsp
-import random, time
+import random, time, re
 
 def get_one_page(url):
     r = requests.get(url)
