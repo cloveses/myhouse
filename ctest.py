@@ -9,7 +9,7 @@ def get_one_page(url):
     content = soup.find('div',{'class':'mod-bd'})
     Content = content.findAll('span',{'class':'short'})
     Content2 = content.findAll('a',{'href':re.compile('^https://www.douban.com/people'),'class':''})
-    for a,b in zip(Content2,Content):
+    for a,b in zip(Content2[1::2],Content):
         try:
             print(a.string,b.string)
         except:
@@ -24,7 +24,7 @@ def get_all():
         curl = ''.join((url[0],str(i*20),url[-1]))
         time.sleep(random.random()*10)
         datas = get_one_page(curl)
-        if not datas:
+        if not datas :
             break
         print(i)
         i += 1
