@@ -17,16 +17,6 @@ def get_page(url):
 
     return Content
 
-def get_content():
-    url = ('https://movie.douban.com/subject/27615439/comments?start=','&limit=20&sort=new_score&status=P')
-    page = 0
-    while True:
-        curl = ''.join((url[0],str(page*20),url[-1]))
-        time.sleep(random.random()*10)
-        datas = get_page(curl)
-        if not datas :
-            break
-        page += 1
-
 if __name__ == '__main__':
-    get_content()
+    url = 'https://movie.douban.com/subject/27615439/comments?start=0&limit=20&sort=new_score&status=P'
+    get_paget(url)
