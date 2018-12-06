@@ -1,0 +1,55 @@
+oal: Write a program to display information about files in directories recursively( it means also display files in subdirectories).
+
+The program will accept a single command-line argument, which is intended to be a path to a directory. For the given directory, and each of the directories contained within it recursively, print the path to the directory and a list of the regular files in it.
+
+Note the following requirements:
+
+Within a directory, list files in ascending numeric order by file size.(20 points)
+For each file, print the file name, size, and last modification timestamp.20 points)
+Format the output clearly. (See below for one possible format.) (10 points)
+You may not use the ls or dir program at all in your solution.
+Input File
+Download the sample folder file, gadgets.zip, which contains a simple set of directories and files to run your program on. Sample output is shown below using the top-level directory from the expanded zip file.
+
+
+Input File
+Download the sample folder file, gadgets.zip, which contains a simple set of directories and files to run your program on. Sample output is shown below using the top-level directory from the expanded zip file.
+
+$ python show-dirs-files.py  gadgets
+Directory <gadgets/blenders>
+            512 1983-01-02 04:14:00 fold
+           1024 1982-04-02 04:14:00 stir
+           1536 1982-05-02 04:14:00 mix
+           2048 1982-06-02 04:14:00 blend
+           2560 1982-07-02 04:14:00 combine
+           3072 1982-01-02 04:14:00 beat
+           3584 1982-08-02 04:14:00 cream
+           4096 1982-09-02 04:14:00 fluff
+           4608 1982-02-02 04:14:00 frappe
+           5120 1982-03-02 04:14:00 whip
+Directory <gadgets/cars/ford>
+            512 2009-07-04 03:06:00 Model-t
+           1024 2009-07-07 03:06:00 Model-n
+           1024 2009-07-06 03:06:00 marauder
+           1536 2009-07-03 03:06:00 maverick
+           2048 2009-07-05 03:06:00 fusion
+Directory <gadgets/cars/toyota>
+            512 2009-02-01 03:03:00 camry
+           1024 2009-01-01 03:03:00 belta
+           1536 2009-03-01 03:03:00 century
+           1536 2009-04-01 03:03:00 tercel
+Directory <gadgets/cars/chevy>
+            512 2010-09-07 09:19:00 prism
+            512 2010-09-07 09:17:00 agile
+           1024 2010-09-07 09:16:00 camaro
+           1536 2010-09-07 09:18:00 tahoe
+           2048 2010-10-07 09:19:00 malibu
+           2560 2010-09-07 09:15:00 avalanche
+Directory <gadgets/cars/honda>
+            512 2009-03-02 03:03:00 civic
+           1024 2009-05-02 03:06:00 accord
+           1536 2009-04-02 03:06:00 cr-v
+           2048 2009-06-02 03:06:00 element
+           2560 2009-03-02 03:04:00 fit
+           3072 2009-03-02 03:06:00 odyssey
+           3072 2009-03-02 03:05:00 stream
