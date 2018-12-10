@@ -34,7 +34,7 @@ def edit_file(filename):
     tar.extract('bpa_online.SWI')
 
     ## 重新压缩文件
-    tar = tarfile.open('20181210000600_save_1.tar.gz','w:gz')
+    tar = tarfile.open(filename,'w:gz')
     tar.add('bpa_online.DAT')
     tar.add('bpa_online.SWI')
     ## 移除抽取的文件
