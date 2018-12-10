@@ -5,7 +5,7 @@ import fileinput
 
 def update_txt_file(names,filename='records.txt'):
     ## 更新保存已处理压缩文件的文本文件
-    with open(filename, 'a+') as file:
+    with open(filename, 'w+') as file:
         for name in names:
             file.write(name)
             file.write('\n')
@@ -19,11 +19,11 @@ def filter_files(files,filename='records.txt'):
             datas.append(line.strip())
     if not datas:
         return files
+
     res = []
     for file in files:
-        if file not in datas:
+        if file not in files:
             res.append(file)
-
     return res
 
 
@@ -52,12 +52,9 @@ def main():
         files = [f for f in files if f.endswith('.tar.gz')]
     else:
         files = [os.path.join(path,f) for f in files if f.endswith('.tar.gz')]
-    
     files = filter_files(files)
-
     for file in files:
         edit_file(file)
-
     update_txt_file(files)
 
 if __name__ == '__main__':
