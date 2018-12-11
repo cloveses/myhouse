@@ -52,12 +52,9 @@ def main():
         files = [f for f in files if f.endswith('.tar.gz')]
     else:
         files = [os.path.join(path,f) for f in files if f.endswith('.tar.gz')]
-    
     files = filter_files(files)
-
     for file in files:
         edit_file(file)
-
     update_txt_file(files)
 
 if __name__ == '__main__':
