@@ -8,8 +8,12 @@ FILENAME = 'high_score.txt'
 
 def out():
     if os.path.exists(FILENAME):
+        datas = []
         for line in fileinput.input(FILENAME):
-            print(line)
+            datas.append(line.strip().split('\t'))
+        datas.sort(key=lambda d:d[1])
+        for data in datas:
+            print('\t'.join(data),'\n')
 
 def display():
     if os.path.exists(FILENAME):
