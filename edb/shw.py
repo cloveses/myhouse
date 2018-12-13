@@ -11,31 +11,34 @@ DEL_DATE = '2018-12-11' #删除压缩包时间点
 TAR_DATE = '2018-12-11' #指定处理压缩包文件时间点
 FILES_LIST = ('bpa_online.DAT','bpa_online.SWI')    #要处理压缩包中的文件
 
-def edit_file(filename):
-    if not os.path.exists(os.path.join(TAR_DEST,filename)):
+def edit_file(src_dest, file_dest, tar_dest,filename):
+    if not os.path.exists(os.path.join(tar_dest,filename)):
         # 打开压缩文件
-        tar = tarfile.open(os.path.join(SRC_DEST,filename))
+        tar = tarfile.open(os.path.join(src_dest,filename))
         ## 抽取所需文件
         for file in FILES_LIST:
-            tar.extract(file, path=FILE_DEST)
+            tar.extract(file, path=file_dest)
 
         ## 重新压缩文件
         tar = tarfile.open(os.path.join(TAR_DEST,filename),'w:gz')
         for file in FILES_LIST:
-            tar.add(os.path.join(FILE_DEST,file),file)
+            tar.add(os.path.join(file_dest,file),file)
 
         ## 改名抽取的文件
         for file in FILES_LIST:
             nfile = ''.join((file[:4],filename[:14],file[-4:]))
-            os.rename(os.path.join(FILE_DEST,file),os.path.join(FILE_DEST,nfile))
+            os.rename(os.path.join(file_dest,file),os.path.join(file_dest,nfile))
 
-def deal_files(files):
+def deal_files(src_dest, file_dest, tar_dest):
+    files = os.listdir(src_dest)
+    files = [f for f in files if f.endswith('.tar.gz')]
+
     dels = []
     deals = []
     del_duration = time.mktime(time.strptime(DEL_DATE,'%Y-%m-%d'))
     deal_duration = time.mktime(time.strptime(TAR_DATE,'%Y-%m-%d'))
     for file in files:
-        t = os.path.getmtime(os.path.join(SRC_DEST,file))
+        t = os.path.getmtime(os.path.join(src_dest,file))
         if t < del_duration:
             dels.append(file)
         if t > deal_duration:
@@ -43,11 +46,11 @@ def deal_files(files):
 
     # 处理压缩包文件
     for file in deals:
-        edit_file(file)
+        edit_file(src_dest, file_dest, tar_dest, file)
 
     # 删除压缩包文件
     for file in dels:
-        os.remove(os.path.join(SRC_DEST,file))
+        os.remove(os.path.join(src_dest,file))
 
 
 def main():
@@ -55,9 +58,7 @@ def main():
         os.makedirs(FILE_DEST)
     if not os.path.exists(TAR_DEST):
         os.makedirs(TAR_DEST)
-    files = os.listdir(SRC_DEST)
-    files = [f for f in files if f.endswith('.tar.gz')]
-    deal_files(files)
+    deal_files(SRC_DEST,FILE_DEST,TAR_DEST)
 
 if __name__ == '__main__':
     main()
