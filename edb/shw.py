@@ -44,7 +44,8 @@ def deal_files(src_dest, file_dest, tar_dest):
     del_duration = time.mktime(time.strptime(DEL_DATE,'%Y-%m-%d'))
     deal_duration = time.mktime(time.strptime(TAR_DATE,'%Y-%m-%d'))
     for file in files:
-        t = os.path.getmtime(os.path.join(src_dest,file))
+        # t = os.path.getmtime(os.path.join(src_dest,file))
+        t = time.mktime(time.strptime(file[:8],'%Y%m%d'))
         if t < del_duration:
             dels.append(file)
         if t > deal_duration:
