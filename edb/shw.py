@@ -5,7 +5,7 @@ import fileinput
 import time
 
 FILE_DEST = 'd:\\temp'  #解压文件目录
-TAR_DEST = 'd:\\retar'  #新压缩包目录
+TAR_DEST = 'd:\\temp'  #新压缩包目录
 SRC_DEST = '.'          #源压缩包目录
 DEL_DATE = '2018-12-11' #删除压缩包时间点
 TAR_DATE = '2018-12-11' #指定处理压缩包文件时间点
@@ -19,15 +19,21 @@ def edit_file(src_dest, file_dest, tar_dest,filename):
         for file in FILES_LIST:
             tar.extract(file, path=file_dest)
 
-        ## 重新压缩文件
-        tar = tarfile.open(os.path.join(TAR_DEST,filename),'w:gz')
-        for file in FILES_LIST:
-            tar.add(os.path.join(file_dest,file),file)
-
+        new_name = ''.join(('bpa_',filename[:14]))
         ## 改名抽取的文件
         for file in FILES_LIST:
-            nfile = ''.join((file[:4],filename[:14],file[-4:]))
+            nfile = ''.join((new_name,file[-4:]))
+            # print(nfile)
+            if os.path.exists(os.path.join(file_dest,nfile)):
+                os.remove(os.path.join(file_dest,nfile))
             os.rename(os.path.join(file_dest,file),os.path.join(file_dest,nfile))
+
+        new_tar_file = ''.join((new_name,filename[-7:]))
+        ## 重新压缩文件
+        tar = tarfile.open(os.path.join(TAR_DEST,new_tar_file),'w:gz')
+        for file in FILES_LIST:
+            name = ''.join((new_name,file[-4:]))
+            tar.add(os.path.join(file_dest,name),name)
 
 def deal_files(src_dest, file_dest, tar_dest):
     files = os.listdir(src_dest)
