@@ -9,7 +9,12 @@ class program:
         progs = self.progs.split('\n')
         for line in progs:
             if line:
-                if 
+                if self.parse_stutas == 0:
+                    if line == '{':
+                        self.parse_stutas = 1
+                        continue
+                    if line == '}':
+                        break
 
 
     def evaluate(self):
