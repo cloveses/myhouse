@@ -1,21 +1,41 @@
 class program:
     def __init__(self,s):
         self.progs = s
-        self.labels = []
+        self.blocks = {}
         self.parse_stutas = 0
+        self.variables = dict()
+        self.graph = dict()
+
+    def parse(self, stmts):
+        stmts = [s for s in stmts if s]
+        block = []
+        for stmt in stmts:
+            words = stmt.split(' ')
+            block.append(stmt.split(':'))
+            if 'if' in words or 'while' in words:
+                self.blocks[block[0][0]] = block[:]
+                block = []
+                
+
+
 
     def getCFG(self):
-        pass
         progs = self.progs.split('\n')
         for line in progs:
             if line:
                 if self.parse_stutas == 0:
-                    if line == '{':
+                    if line == '{' or line.startswith('main()'):
                         self.parse_stutas = 1
                         continue
-                    if line == '}':
+                    elif line == '}':
                         break
-
+                    else:
+                        if line.startswith('bool'):
+                            segments = line.strip().split(' ')
+                            segments = [s for s in segments if s]
+                            self.variables[segments[1]] = eval(segments[-1].strip(';'))
+                if self.parse_stutas == 1:
+                    self.graph
 
     def evaluate(self):
         pass
