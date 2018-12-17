@@ -12,14 +12,15 @@ TAR_DATE = '2018-12-11' #指定处理压缩包文件时间点
 FILES_LIST = ('bpa_online.DAT','bpa_online.SWI')    #要处理压缩包中的文件
 
 def edit_file(src_dest, file_dest, tar_dest,filename):
-    if not os.path.exists(os.path.join(tar_dest,filename)):
+    new_name = ''.join(('bpa_',filename[:14]))
+    new_tar_file = ''.join((new_name,filename[-7:]))
+    if not os.path.exists(os.path.join(tar_dest,new_tar_file)):
         # 打开压缩文件
         tar = tarfile.open(os.path.join(src_dest,filename))
         ## 抽取所需文件
         for file in FILES_LIST:
             tar.extract(file, path=file_dest)
 
-        new_name = ''.join(('bpa_',filename[:14]))
         ## 改名抽取的文件
         for file in FILES_LIST:
             nfile = ''.join((new_name,file[-4:]))
@@ -30,7 +31,7 @@ def edit_file(src_dest, file_dest, tar_dest,filename):
 
         new_tar_file = ''.join((new_name,filename[-7:]))
         ## 重新压缩文件
-        tar = tarfile.open(os.path.join(TAR_DEST,new_tar_file),'w:gz')
+        tar = tarfile.open(os.path.join(tar_dest,new_tar_file),'w:gz')
         for file in FILES_LIST:
             name = ''.join((new_name,file[-4:]))
             tar.add(os.path.join(file_dest,name),name)
