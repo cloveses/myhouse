@@ -38,13 +38,14 @@ class program:
                     block.append((label,stmt.strip(';')))
                     self.blocks[block[0][0]] = block[:]
                     pre_link = block[0][0]
+                    self.graphs[block[0][0]] = label
                     block = []
 
                 elif 'while' in prog:
                     if block:
                         self.blocks[block[0][0]] = block[:]
                         self.graphs[block[0][0]] = label
-                    self.blocks[label] = stmt
+                    self.blocks[label] = [(label,stmt),]
                     pre_link = label
                     block = []
 
@@ -60,8 +61,10 @@ class program:
 
                     block = []
         if block:
-                self.blocks[block[0][0]] = block[:]
+            self.graphs[block[0][0]] = label
+            self.blocks[pre_link] = block[:]
         print(self.blocks)
+        print(self.graphs)
 
 
 
