@@ -20,19 +20,19 @@ for i in range(-5,5):
     w.create_line(w0,j+h0,w0+5,j+h0,fill="red")
     w.create_text(w0-10,j+h0,text=str(-i))
 
-def x(t):
-    
-    x = math.cos(t)*160-math.cos(2*t)*80
-    x = t*40
-    x+=w0
-    return x
-
 def y(t):
     
+    x = math.cos(t)*160-math.cos(2*t)*80
+    # x = t*40
+    # x+=w0
+    return x+400
+
+def x(t):
+    
     y = math.sin(t)*160-math.sin(2*t)*80
-    y-=h0
-    y=-y
-    return y    
+    # y-=h0
+    y = y
+    return y+300
 
 
 t = -math.pi
