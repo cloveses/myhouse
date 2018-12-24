@@ -29,8 +29,8 @@ class MyMainWindow(QMainWindow, Ui_mainWindow):
                     # from1.setVisible(True)
                     # # from1.exec_()
                     # self.window.show()
-                    self.takeCentralWidget()
-                    self.setup2Ui(self)
+                    self.takeCentralWidget()#移除窗口中其他现有元素
+                    self.setup2Ui(self)#建立新的界面元素
                 else:
                     rely = QMessageBox.information(self,"提示","登陆失败", QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
                     print ( rely )
