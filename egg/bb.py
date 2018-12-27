@@ -1,11 +1,8 @@
 import xlrd,xlwt
 
-filename = 'a.xlsx'
+filename = 'a.xls'
 
 def get_data():
-     #既可以打开xls类型的文件，也可以打开xlsx类型的文件
-    #w = xlrd.open_workbook('text.xls')
-    #w = xlrd.open_workbook('acs.xlsx')
     datas = []
     w = xlrd.open_workbook(filename)
     ws = w.sheets()[0]
@@ -14,65 +11,71 @@ def get_data():
         data = ws.row_values(i)
         datas.append(data)
     #    print(datas)
-    return datas
+    colnames,datas = datas[0],datas[1:]
+    for i in range(len(datas)):
+        datas[i][0] = int(datas[i][0])
+    return colnames,datas
 
-datas = get_data()
-colnames,datas = datas[0],datas[1:]
+colnames,datas = get_data()
 
 
 def add(row_data):
-    datas.append(row_data)
+    row_data = row_data.split(',')
+    # row_data[2] = int(row_data[2])
+    seq = len(datas)
+    data = [seq+1,]
+    data.extend(row_data)
+    datas.append(data)
 
 def edit(seq,colname,data):
-    ws,wb = get_ws()
-    for row in ws.iter_rows():
-        if row[0].value == seq:
-            row[datas[0].index(colname)].value = data
-            break
-    wb.save(filename)
-    datas = load()
+    datas[seq][colnames.index(colname)] = data
 
-def query(colname,data):
-    datas = load()
-    index = datas[0].index(colname)
+def query():
     for data in datas:
-        if data[index] == data:
-            print(data)
+        print(data)
 
 def del_data(seq):
-    ws,wb = get_ws()
-    for row in ws.iter_rows():
-        if row[0].value == seq:
-            row[-1].value = '已售空'
-    wb.save(filename)
-    datas = load()
+    del data[seq-1]
+
+def save_datas():
+    #将一张表的信息写入电子表格中
+    #文件内容不能太大，否则输出文件会出错。
+    w = xlwt.Workbook(encoding='utf-8')
+    ws = w.add_sheet('sheet1')
+    for rowi,row in enumerate(datas):
+        rr = ws.row(rowi)
+        for coli,celld in enumerate(row):
+            if isinstance(celld,int) or isinstance(celld,float):
+                rr.set_cell_number(coli,celld)
+            else:
+                rr.set_cell_text(coli,celld)
+    #rr = ws.row(4)
+    w.save(filename)
 
 def main():
-    print('commands:add,edi,que,del')
+    print('commands:add,edi,que,del,exit')
     while True:
         op = input('Pleas input a command:')
         if op == 'add':
             row_data = input('Please input data:')
-            row_data = row_data.split(',')
-            row_data[0] = int(row_data[0])
-            row_data[3] = int(row_data[3])
+            add(row_data)
         elif op == 'edi':
-            edit_data = input('data:')
-            edit_data = edit_data.split(',')
-            edit(*edit_data)
+            seq = input('序号:')
+            colname = input('列名：')
+            data = input('数据：')
+            if seq and colname and data and seq.isdigit() and colname in colnames and int(seq) < len(datas):
+                edit(int(seq)-1, colname, data)
         elif op == 'que':
-            datass = input('data:')
-            datass = datass.split(',')
-            query(*datass)
+            query()
         elif op == 'del':
-            datass = input('Please input seq:')
-            datass = int(datass)
-            del_data(datass)
+            datass = input('序号：')
+            if seq and seq.isdigit():
+                del_data(int(seq))
         elif op == 'exit':
+            save_datas()
             break
         else:
             continue
 
 if __name__ == '__main__':
-    # main()
-    add((2,'aaa','bbb',30,'ccc'))
+    main()
