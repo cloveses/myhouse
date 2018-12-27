@@ -35,7 +35,7 @@ def query():
         print(data)
 
 def del_data(seq):
-    del data[seq-1]
+    del datas[seq-1]
 
 def save_datas():
     #将一张表的信息写入电子表格中
@@ -68,7 +68,7 @@ def main():
         elif op == 'que':
             query()
         elif op == 'del':
-            datass = input('序号：')
+            seq = input('序号：')
             if seq and seq.isdigit():
                 del_data(int(seq))
         elif op == 'exit':
