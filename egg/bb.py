@@ -42,7 +42,9 @@ def save_datas():
     #文件内容不能太大，否则输出文件会出错。
     w = xlwt.Workbook(encoding='utf-8')
     ws = w.add_sheet('sheet1')
-    for rowi,row in enumerate(datas):
+    ds = [colnames,]
+    ds.extend(datas)
+    for rowi,row in enumerate(ds):
         rr = ws.row(rowi)
         for coli,celld in enumerate(row):
             if isinstance(celld,int) or isinstance(celld,float):
