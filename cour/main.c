@@ -78,48 +78,49 @@ int main(int argc, char *argv[]) {
     }
     printf("query success\n");
     
-    //导出aa.txt 
-    FILE *myf;
-    myf = fopen("aa.txt","w");
-    for(i=2;i<(nrow+1)*ncolumn;i+=ncolumn)
-    {
-        for(j=0;j<ncolumn;j++)
-        {
-             printf("%s  ",db_result[i+j]);
-             fputs(db_result[i+j],myf);
-             fputs(",",myf);
-    	}
-        printf("\n");
-        fputs("\n",myf);
-    }
-    fclose(myf);
-    printf("output success\n");
-    
-    //导入
+//    //导出aa.txt 
 //    FILE *myf;
-// "insert into users values(3,'cccc')"
-    myf = fopen("aa.txt","r");
-    char *fa="%d,%s,";
-    char value[80],ids[30];
-    int id,len;
-    char sql[700]="", *sql_head="insert into users values(", *sql_tail="');";
-    while (fscanf(myf,fa,&id,value) != -1)
-    {
-//    	printf("%d  %s ",id,value);
-    	strcat(sql,sql_head);
-    	itoa(id,ids,10);
-    	strcat(sql,ids);
-    	strcat(sql,",'");
-    	len = strlen(value);
-    	value[len-1] = '\0';
-    	strcat(sql,value);
-    	strcat(sql,sql_tail);
-    	
-	};
-	fclose(myf);
-    printf("%s",sql);
-    sqlite3_exec(db,sql,0,0,&s);
+//    myf = fopen("aa.txt","w");
+//    for(i=2;i<(nrow+1)*ncolumn;i+=ncolumn)
+//    {
+//        for(j=0;j<ncolumn;j++)
+//        {
+//             printf("%s  ",db_result[i+j]);
+//             fputs(db_result[i+j],myf);
+//             fputs(",",myf);
+//    	}
+//        printf("\n");
+//        fputs("\n",myf);
+//    }
+//    fclose(myf);
+//    printf("output success\n");
+    
+//    //导入
+////    FILE *myf;
+//// "insert into users values(3,'cccc')"
+//    myf = fopen("aa.txt","r");
+//    char *fa="%d,%s,";
+//    char value[80],ids[30];
+//    int id,len;
+//    char sql[200]="", *sql_head="insert into users values(", *sql_tail="');";
+//    while (fscanf(myf,fa,&id,value) != -1)
+//    {
+////    	printf("%d  %s ",id,value);
+//    	strcat(sql,sql_head);
+//    	itoa(id,ids,10);
+//    	strcat(sql,ids);
+//    	strcat(sql,",'");
+//    	len = strlen(value);
+//    	value[len-1] = '\0';
+//    	strcat(sql,value);
+//    	strcat(sql,sql_tail);
+//    	printf("%s",sql);
+//   		sqlite3_exec(db,sql,0,0,&s);
+//	};
+//	fclose(myf);
+    
     printf("inpput success\n");
+    
     sqlite3_close(db);
     db = 0;
     return 0;
