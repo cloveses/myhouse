@@ -9,7 +9,7 @@ from login_init import *
 
 
 #解释界面
-class MyMainWindow(QMainWindow, Ui_mainWindow, Ui_SecondWindow):
+class MyMainWindow(QMainWindow, Ui_mainWindow):
     def __init__(self,parent=None):
         super().__init__(parent)
         self.setupUi(self)
