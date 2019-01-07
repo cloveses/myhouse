@@ -78,22 +78,22 @@ int main(int argc, char *argv[]) {
     }
     printf("query success\n");
     
-//    //导出aa.txt 
-//    FILE *myf;
-//    myf = fopen("aa.txt","w");
-//    for(i=2;i<(nrow+1)*ncolumn;i+=ncolumn)
-//    {
-//        for(j=0;j<ncolumn;j++)
-//        {
-//             printf("%s  ",db_result[i+j]);
-//             fputs(db_result[i+j],myf);
-//             fputs(",",myf);
-//    	}
-//        printf("\n");
-//        fputs("\n",myf);
-//    }
-//    fclose(myf);
-//    printf("output success\n");
+    //导出aa.txt 
+    //FILE *myf;
+    //myf = fopen("aa.txt","w");
+    for(i=2;i<(nrow+1)*ncolumn;i+=ncolumn)
+    {
+        for(j=0;j<ncolumn;j++)
+        {
+             printf("%s  ",db_result[i+j]);
+            // fputs(db_result[i+j],myf);
+             //fputs(",",myf);
+    	}
+        printf("\n");
+       // fputs("\n",myf);
+    }
+    //fclose(myf);
+    printf("output success\n");
     
 //    //导入
 ////    FILE *myf;
