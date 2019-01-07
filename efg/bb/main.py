@@ -8,22 +8,25 @@ from manychat import *
 import sys
 
 class start(QMainWindow,Ui_Form,manychat):
+	
 	def __init__(self,parent=None):
 		super().__init__(parent)
 		self.setupUi(self)
+
 	def redirect(self):
 		file_object = open('1.txt','r')
 		try: 
 			if self.textEdit.toPlainText() in file_object:
 				box = QMessageBox(QMessageBox.Information, "提示", "登陆成功")
-				yes = box.addButton("登录", QMessageBox.YesRole)
+				yes = box.addButton("是", QMessageBox.YesRole)
 				
-				no = box.addButton("登录", QMessageBox.NoRole)
+				no = box.addButton("否", QMessageBox.NoRole)
 				box.exec_()
 				# rely = QMessageBox.information(self, "提示", "登陆成功", QMessageBox.Yes | QMessageBox.No,QMessageBox.Yes)
 				
-				print ( box.clickedButton() )
-				if yes.clicked == yes:
+				# print ( box.clickedButton() )
+				if box.clickedButton() == yes:
+					print('ddfggg')
 					self.takeCentralWidget()#移除窗口中其他现有元素
 					self.setupUi3(self)#建立新的界面元素
 		finally:

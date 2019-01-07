@@ -244,7 +244,6 @@ class Ui_mainWindow(object):
         self.radioButton.setStatusTip(_translate("mainWindow", "勾选则清除掉您输入的账号与密码！"))
         self.radioButton.setText(_translate("mainWindow", "重置输入"))
 
-
     def setup2Ui(self, SecondWindow):
         SecondWindow.setObjectName("SecondWindow")
         SecondWindow.resize(800, 600)
