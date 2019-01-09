@@ -2,29 +2,21 @@
 #### err
 
 def action(m=3,start=1):
-    inits = list(range(m))
+    inits = [True,] * m
     for i in range(m):
         datas = inits[:]
+        start = 1
+        k = i
+        while True:
+            k += 1
+            if k == 0 and 
 
-        while len(datas) > 1:
-            pre = 0
-            segments,remain = divmod(len(datas), 5)
-            seqs = [i*5-1-pre for i in range(segments)]
-            rdata = [datas[s] for s in seqs]
-            if all(rdata):
-                for s in seqs:
-                    del datas[s]
-            else:
-                break
-            pre = remain
-        else:
-            print(i)
-            break
 
 if __name__ == '__main__':
     # for i in range(3,4):
     #     print(i,end=' ')
     #     action(i)
+    # action(2)
     # action(3)
     # action(4)
     action(5)

@@ -1,5 +1,13 @@
 #以表格的形式存储，元素（man,woman,colnum）
 #相邻行colnum-1为父子关系
+"""
+(father,mother,0)
+                (man,woman,1)
+                            (man,woman,2)
+                (man,woman,1)
+"""
+
+
 import os
 import pickle
 
