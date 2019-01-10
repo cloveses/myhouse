@@ -136,11 +136,11 @@ def main():
             products = pickle.load(f)
 
     print('-------------------')
-    print('添加产品－－add')
+    print('添加产品类别－－add')
     print('产品入库－－store')
-    print('产品入库－－sell')
-    print('产品入库－－display')
-    print('产品入库－－exit')
+    print('产品出库－－sell')
+    print('产品显示－－display')
+    print('退出系统－－exit')
     while True:
         command = input('请输入命令：')
         if not command:

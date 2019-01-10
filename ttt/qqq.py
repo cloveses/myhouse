@@ -33,7 +33,6 @@ def action(m=3,start=1):
         if flag:
             break
 
-# 方式二 双向鍡链表
 # 士兵节点
 class Soldier:
     _seq = 0
@@ -97,8 +96,8 @@ def get_result(m=3):
         count = 1
         while True:
 
-            # print((count,node.seq),end =' ')
-            # display(node)
+            print((count,node.seq),end =' ')
+            display(node)
 
             # 成功退出
             if node.next == node and node.pre == node and node.post == 'leader':
@@ -122,18 +121,17 @@ def get_result(m=3):
         if flag:
             break
 
-def main():
-    while True:
-        m = input('小队总人数：')
-        if not m or not m.isdigit():
-            print('输入错误！')
-        else:
-            m = int(m)
-            # 方式一调用
-            action(m)
-            # 方式二调用
-            get_result(m)
-            break
-
 if __name__ == '__main__':
-    main()
+    # action(2)
+    # get_result(2)
+    # action(3)
+    get_result(3)
+    # action(4)
+    get_result(4)
+    # action(5)
+    # get_result(5)
+    # action(6)
+    # get_result(6)
+    # action(7)
+    # get_result(7)
+    # action(10)
