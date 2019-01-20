@@ -123,3 +123,38 @@ if __name__ == '__main__':
       #host = Linux(x[0], x[1], x[2])
       #host.sftp_put_dir(local_path, remote_path)
     host.close()
+
+
+
+        def get_pathes(self,path):
+        paths = []
+        while True:
+            pathlst = os.path.split(path)
+            if  not pathlst[0] or not pathlst[-1] or pathlst == '.':
+                break
+            paths.append(pathlst[-1])
+            path = pathlst[0]
+        return paths
+
+    def upload(self, path):
+        self.login_ftp()
+        if not self.ftp:
+            print('Link error!')
+            return
+        all_files = self.get_files(path)
+        if all_files:
+            for root,dirs,files in all_files:
+                self.ftp.sendline('cd /')
+                # if self.ftp.expect('250') != 0:
+                #     print('Change dir error!')
+                #     return
+                if files:
+                    paths = self.get_pathes(root)
+                    for path in paths:
+                        self.ftp.sendline('mkdir ' + path)
+                        self.ftp.sendline('cd '+ path)
+                        # if self.ftp.expect('550') == 0:
+                            # self.ftp.sendline('mkdir ' + path)
+                        #     self.ftp.sendline('cd '+ path)
+                    for filename in files:
+                        self.ftp.sendline('put '+ os.path.join(root,filename))
