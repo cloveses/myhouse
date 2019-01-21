@@ -1,5 +1,11 @@
 from selenium import webdriver
 import time,random,requests
+import re
+
+
+# 爬取QQ日志
+
+# 以下获取目录页中的所有日志URL并写入文件
 
 br = webdriver.Firefox()
 br.get('https://user.qzone.qq.com/46420820/infocenter')
@@ -44,14 +50,14 @@ with open('url.txt','w') as f:
         f.write('\n')
 
 
-import re
 
+# 处理日志标题中不符合文件名命名的字符
 def validateTitle(title):
     rstr = r"[\/\\\:\*\?\"\<\>\|]"  # '/ \ : * ? " < > |'
     new_title = re.sub(rstr, "_", title)  # 替换为下划线
     return new_title
-    
-# 以下为从文件获取保存的所有日志URL，逐条获取
+
+# # 打开上一步保存的日志URL文本文件
 # with open('url.txt','r') as f:
 #     log_urls = f.read()
 # log_urls = log_urls.split('\n')
@@ -61,6 +67,7 @@ def validateTitle(title):
 
 failed_urls = []
 
+# 逐条获取日志的内容，文本放在文本文件中，图片单独存储
 for index,url in enumerate(log_urls):
     time.sleep(random.randint(2,6))
     br.get(url)
@@ -77,7 +84,7 @@ for index,url in enumerate(log_urls):
     except:
         print(url,'failed!')
         failed_urls.append(url)
-
+    # 逐个图片获取
     imgs = content_eles.find_elements_by_tag_name('img')
     for index,img in enumerate(imgs):
         time.sleep(random.randint(2,6))
@@ -88,6 +95,7 @@ for index,url in enumerate(log_urls):
                     f.write(requests.get(img_url).content)
             except:
                 print('img failed!')
+
 with open('failed_urls.txt', 'w',encoding='utf-8') as f:
     for u in failed_urls:
         f.write(url)
