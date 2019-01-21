@@ -33,9 +33,10 @@ class MyFtp:
 
     # 测试路径名是否在服务器返回的路径列表中
     def exists(self,dlst,directory):
-        for d in dlst:
-            if d.startswith('d') and d.endswith(directory):
-                return True
+        # for d in dlst:
+        #     if d.startswith('d') and d.endswith(directory):
+        #         return True
+        return directory in dlst
 
     # 进行要上传的FTP服务器目录
     def enter_dir(self, paths, dest_dir):
@@ -50,7 +51,9 @@ class MyFtp:
         # 逐级进行目录目录，不存在，则创建
         for path in paths:
             res = self.ftp.nlst()
+            print('dirlst:',res)
             if not self.exists(res, path):
+                print('create:',path)
                 res = self.ftp.mkd(path)
                 # if not res.strip():
                 #     print('deny!')
@@ -92,6 +95,21 @@ class MyFtp:
                     fp.close()
         self.ftp.quit()
 
+
+    def download(self,serverpath):
+        self.connect()
+        if not self.ftp:
+            print('Link error!')
+            return
+        res = self.ftp.cwd(serverpath)
+        if not res.startswith('250'):
+            print('change directory failed!')
+            return
+        files = self.ftp.nlst()
+        for f in files:
+            fp = open(f,'wb+')
+            self.ftp.retrbinary('RETR '+f, fp.write)
+            fp.close()
 
 if __name__ == '__main__':
     ftp = MyFtp('127.0.0.1', 'anonymous', '')
