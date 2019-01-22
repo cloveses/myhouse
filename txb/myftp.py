@@ -109,7 +109,9 @@ class MyFtp:
             return
         files = []
         self.ftp.retrlines('LIST',lambda s:files.append(s))
-        files = [f.split(' ')[-1] for f in files if f.startswith('d')]
+        print(files)
+        files = [f.split(' ')[-1] for f in files if not f.startswith('d')]
+        print(files)
         for f in files:
             try:
                 fp = open(f,'wb')
