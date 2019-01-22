@@ -81,6 +81,7 @@ class MyFtp:
         if not self.ftp:
             print('Link error!')
             return
+        self.ftp.encoding = 'gbk'
         # 逐目录上传文件
         for root,dirs,files in all_files:
             if files:
@@ -101,15 +102,21 @@ class MyFtp:
         if not self.ftp:
             print('Link error!')
             return
+        self.ftp.encoding = 'gbk'
         res = self.ftp.cwd(serverpath)
         if not res.startswith('250'):
             print('change directory failed!')
             return
-        files = self.ftp.nlst()
+        files = []
+        self.ftp.retrlines('LIST',lambda s:files.append(s))
+        files = [f.split(' ')[-1] for f in files if f.startswith('d')]
         for f in files:
-            fp = open(f,'wb+')
-            self.ftp.retrbinary('RETR '+f, fp.write)
-            fp.close()
+            try:
+                fp = open(f,'wb')
+                self.ftp.retrbinary('RETR '+f, fp.write)
+                fp.close()
+            except:
+                print(f)
 
 if __name__ == '__main__':
     ftp = MyFtp('127.0.0.1', 'anonymous', '')
