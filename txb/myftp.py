@@ -97,29 +97,43 @@ class MyFtp:
         self.ftp.quit()
 
 
-    def download(self,serverpath):
+    def download(self,serverpath, local_path='.\\'):
         self.connect()
         if not self.ftp:
             print('Link error!')
             return
         self.ftp.encoding = 'gbk'
-        res = self.ftp.cwd(serverpath)
+        self.local_root_path = os.path.abspath(local_path)
+        self.downloads(serverpath, local_path)
+
+    def downloads(self, rpath, local_path):
+
+        res = self.ftp.cwd(rpath)
         if not res.startswith('250'):
             print('change directory failed!')
             return
-        files = []
-        self.ftp.retrlines('LIST',lambda s:files.append(s))
-        print(files)
-        files = [f.split(' ')[-1] for f in files if not f.startswith('d')]
-        print(files)
-        for f in files:
-            try:
-                fp = open(f,'wb')
-                self.ftp.retrbinary('RETR '+f, fp.write)
-                fp.close()
-            except:
-                print(f)
+
+        os.chdir(self.local_root_path)
+
+        if not os.path.exists(local_path):
+            os.makedirs(local_path)
+        os.chdir(local_path)
+
+        datas = []
+        self.ftp.retrlines('LIST',lambda s:datas.append(s))
+
+        files = [f.split(' ')[-1] for f in datas if not f.startswith('d')]
+        directorys = [f.split(' ')[-1] for f in datas if f.startswith('d')]
+
+        for filename in files:
+            with open(filename,'wb') as f:
+                self.ftp.retrbinary('RETR ' + filename, f.write)
+
+        for d in directorys:
+            next_rpath = rpath + d if rpath == '/' else '/'.join((rpath,d))
+            self.downloads(next_rpath, os.path.join(local_path,d))
 
 if __name__ == '__main__':
     ftp = MyFtp('127.0.0.1', 'anonymous', '')
-    ftp.upload('D:\\lx\\qx', '/ass')
+    # ftp.upload('D:\\lx\\qx', '/ass')
+    ftp.download('/')
