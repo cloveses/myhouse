@@ -126,6 +126,7 @@ class MyFtp:
         directorys = [f.split(' ')[-1] for f in datas if f.startswith('d')]
 
         for filename in files:
+            print(rpath,'/',filename)
             with open(filename,'wb') as f:
                 self.ftp.retrbinary('RETR ' + filename, f.write)
 
