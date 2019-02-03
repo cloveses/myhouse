@@ -46,8 +46,16 @@ def save(params):
     params['tags'] = ','.join(params['tags'])
     Book(**params)
 
-def parse_book(html):
-    params = {}
+@db_session
+def filter_urls(book_urls):
+    new_urls = []
+    for book_url in book_urls:
+        if not Book.exists(book_url=book_url):
+            new_urls.append(book_url)
+    return new_urls
+
+def parse_book(html, book_url):
+    params = {'book_url':book_url}
     title = html.xpath("//section[contains(@class,'block-entity-fieldnodefield-t')]/div/div/text()")
     params['title'] = title[-1] if title else ''
     writer = html.xpath("//a[@itemprop='author']/text()")
@@ -60,10 +68,11 @@ def parse_book(html):
     params['downloads'] = downloads[-1] if downloads else '0'
     params['tags'] = html.xpath("//div[contains(@class,'field--name-field-genre')]//a/text()")
     down_url = html.xpath("//a[@name='download']/@href")
-    print(params)
-    print(down_url)
+    # print(params)
+    # print(down_url)
     if down_url:
         down_url = down_url[-1]
+        save(params)
     else:
         down_url = ''
     return down_url,params['title'] or params['writer']
@@ -72,11 +81,11 @@ async def fetch_login():
     async with aiohttp.ClientSession() as session:
         # 第一次请求获取cookie
         async with session.get('https://manybooks.net/') as res:
-            print(res.cookies)
+            # print(res.cookies)
         time.sleep(random.randint(2,5))
         # 第二次请求获取登录信息
         async with session.post('https://manybooks.net/mnybks-login-form?_wrapper_format=drupal_modal') as res:
-            print(res.cookies)
+            # print(res.cookies)
             text = await res.text(encoding='utf-8')
             text = json.loads(text)
             datas = text[-1]['data']
@@ -86,27 +95,44 @@ async def fetch_login():
             params['ajax_page_state[libraries]'] = "bootstrap/popover,bootstrap/tooltip,comment/drupal.comment-by-viewer,core/drupal.autocomplete,core/drupal.dialog.ajax,core/drupal.dialog.ajax,core/html5shiv,google_analytics/google_analytics,mnybks/bootstrap-scripts,mnybks/gleam-script,mnybks/global-styling,mnybks/read-more,mnybks_main/mnybks_main.commands,mnybks_owl/mnybks-owl.custom,mnybks_owl/mnybks-owl.slider,mnybks_seo/mnybks-seo.mouseflow,mnybks_statistic/mnybks_statistic.book-read-statistic-sender,mnybks_statistic/mnybks_statistic.mb-book-stats,paragraphs/drupal.paragraphs.unpublished,system/base,views/views.ajax,views/views.module"
             params['email'] = '45021972@qq.com'
             params['pass'] = 'cloveses'
-            print(params)
+            # print(params)
         time.sleep(random.randint(2,5))
         #第三次请求登录
         async with session.post('https://manybooks.net/mnybks-login-form?_wrapper_format=drupal_modal&ajax_form=1&_wrapper_format=drupal_ajax',data=params) as res:
             # print(res.cookies['_ga'],res.cookies['_gid'])
             text = await res.text(encoding='utf-8')
+
+        #获取页数
+        async with session.get('https://manybooks.net/search-book?language=All&sort_by=field_downloads') as res:
+            # print(res.cookies['_ga'],res.cookies['_gid'])
+            text = await res.text(encoding='utf-8')
+            pagenum_html = etree.HTML(text)
+            page_num = pagenum_html.xpath('//a[@title="Go to last page"]/@href')
+            if page_num:
+                page_num = page_num[-1]
+                page_num = page_num[page_num.index('page=') + len('page='):]
+                page_num = int(page_num) + 1
+                # print('page_num:',page_num)
+            else:
+                page_num = 2520
+
+
         #获取某目录页中所有书
-        for i in range(2519):
+        for i in range(page_num):
             outline_page_url = BASE_URL+str(i)
             outline_html = await fetch_get(session, outline_page_url)
             outline_html = etree.HTML(outline_html)
             outline_urls = outline_html.xpath("//div[@class='content']//a/@href")
+            outline_urls = filter_urls(outline_urls)
             time.sleep(random.randint(2,5))
             # 获取每本书信息
             for book_url in outline_urls:
                 book_url = BOOK_URL + book_url
                 book_html = await fetch_get(session, book_url)
                 book_html = etree.HTML(book_html)
-                down_url,title = parse_book(book_html)
+                down_url,title = parse_book(book_html, book_url[len(BOOK_URL):])
                 if down_url:
-                    print(down_url,title)
+                    # print(down_url,title)
                     time.sleep(random.randint(2,5))
                     title = validateTitle(title)
                     if not title:
