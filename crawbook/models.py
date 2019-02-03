@@ -9,7 +9,6 @@ class Book(db.Entity):
     published = Required(int)
     pages = Required(int)
     downloads = Required(int)
-    excerpt = Required(LongStr)
     tags = Required(str)
 
 # set_sql_debug(True)
