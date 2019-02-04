@@ -31,8 +31,8 @@ def parse_login_data(html):
     params['_drupal_ajax'] = '1'
     return params
 
-@db_session
-def save(params):
+# @db_session
+async def save(params):
     for k in ('published', 'pages'):
         if params[k].isdigit():
             params[k] = int(params[k])
@@ -44,17 +44,25 @@ def save(params):
     else:
         params['downloads'] = 0
     params['tags'] = ','.join(params['tags'])
-    Book(**params)
+    with db_session:
+        try:
+            if hasattr(BookInfo,'writer'):
+                b = BookInfo(**params)
+            else:
+                print(BookInfo)
+        except:
+            pass
 
-@db_session
-def filter_urls(book_urls):
+# @db_session
+async def filter_urls(book_urls):
     new_urls = []
     for book_url in book_urls:
-        if not Book.exists(book_url=book_url):
-            new_urls.append(book_url)
+        with db_session:
+            if not exists(b for b in BookInfo if b.book_url==book_url):
+                new_urls.append(book_url)
     return new_urls
 
-def parse_book(html, book_url):
+async def parse_book(html, book_url):
     params = {'book_url':book_url}
     title = html.xpath("//section[contains(@class,'block-entity-fieldnodefield-t')]/div/div/text()")
     params['title'] = title[-1] if title else ''
@@ -72,7 +80,7 @@ def parse_book(html, book_url):
     # print(down_url)
     if down_url:
         down_url = down_url[-1]
-        save(params)
+        await save(params)
     else:
         down_url = ''
     return down_url,params['title'] or params['writer']
@@ -82,7 +90,7 @@ async def fetch_login():
         # 第一次请求获取cookie
         async with session.get('https://manybooks.net/') as res:
             # print(res.cookies)
-        time.sleep(random.randint(2,5))
+            asyncio.sleep(random.randint(2,5))
         # 第二次请求获取登录信息
         async with session.post('https://manybooks.net/mnybks-login-form?_wrapper_format=drupal_modal') as res:
             # print(res.cookies)
@@ -96,7 +104,7 @@ async def fetch_login():
             params['email'] = '45021972@qq.com'
             params['pass'] = 'cloveses'
             # print(params)
-        time.sleep(random.randint(2,5))
+        asyncio.sleep(random.randint(12,25))
         #第三次请求登录
         async with session.post('https://manybooks.net/mnybks-login-form?_wrapper_format=drupal_modal&ajax_form=1&_wrapper_format=drupal_ajax',data=params) as res:
             # print(res.cookies['_ga'],res.cookies['_gid'])
@@ -123,17 +131,17 @@ async def fetch_login():
             outline_html = await fetch_get(session, outline_page_url)
             outline_html = etree.HTML(outline_html)
             outline_urls = outline_html.xpath("//div[@class='content']//a/@href")
-            outline_urls = filter_urls(outline_urls)
-            time.sleep(random.randint(2,5))
+            outline_urls = await filter_urls(outline_urls)
+            asyncio.sleep(random.randint(12,25))
             # 获取每本书信息
             for book_url in outline_urls:
                 book_url = BOOK_URL + book_url
                 book_html = await fetch_get(session, book_url)
                 book_html = etree.HTML(book_html)
-                down_url,title = parse_book(book_html, book_url[len(BOOK_URL):])
+                down_url,title = await parse_book(book_html, book_url[len(BOOK_URL):])
                 if down_url:
                     # print(down_url,title)
-                    time.sleep(random.randint(2,5))
+                    asyncio.sleep(random.randint(5,25))
                     title = validateTitle(title)
                     if not title:
                         title = validateTitle(book_url)

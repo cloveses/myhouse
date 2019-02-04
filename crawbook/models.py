@@ -3,7 +3,7 @@ from pony.orm import *
 
 db = Database()
 
-class Book(db.Entity):
+class BookInfo(db.Entity):
     title = Required(str)
     writer = Required(str)
     published = Required(int)
