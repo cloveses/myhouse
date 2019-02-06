@@ -6,7 +6,6 @@ db = Database()
 class Book(db.Entity):
     title = Required(str)
     writer = Required(str)
-    published = Required(str)
     release_date = Required(str)
     downloads = Required(str)
     tags = Required(str)

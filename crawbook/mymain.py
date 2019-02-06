@@ -20,7 +20,7 @@ def validateTitle(title):
 
 async def fetch_get(session, url):
     asyncio.sleep(random.randint(3,9))
-    print('get:', url)
+    # print('get:', url)
     async with session.get(url) as response:
         return await response.text(encoding='utf-8')
 
@@ -42,7 +42,7 @@ def filter(url):
 async def get_book(session, url):
     if not url.startswith('http'):
         url = 'http:' + url
-    print('bookurl:',url)
+    # print('bookurl:',url)
     book_text = await fetch_get(session, url)
     book_html = etree.HTML(book_text)
     params = {}
@@ -51,8 +51,8 @@ async def get_book(session, url):
         params['writer'] = book_html.xpath("//table[@class='bibrec']//a[@itemprop='creator']/text()")
         params['title'] = book_html.xpath("//div[@id='content']//h1[@itemprop='name']/text()")
         params['tags'] = book_html.xpath("//table[@class='bibrec']//a[contains(@href,'/browse/loccs')]/text()")
-        params['release_date'] = book_html.xpath("//table[@class='bibrec']//a[@itemprop='datePublished']/text()")
-        params['downloads'] = book_html.xpath("//table[@class='bibrec']//a[@itemprop='interactionCount']/text()")
+        params['release_date'] = book_html.xpath("//table[@class='bibrec']//td[@itemprop='datePublished']/text()")
+        params['downloads'] = book_html.xpath("//table[@class='bibrec']//td[@itemprop='interactionCount']/text()")
         for k,v in params.items():
             if v:
                 params[k] = v[-1]
@@ -61,34 +61,41 @@ async def get_book(session, url):
         params['book_url'] = url.split('/')[-1]
         if 'by' in params['title']:
             params['title'] = params['title'][:params['title'].index('by')].strip()
-        print('params:',params)
-        down_url = book_html.xpath("//div[@id='download']//a[@type='text/plain']/@href")
-        down_url_epub = book_html.xpath("//div[@id='download']//a[@type='application/epub+zip']/@href")
+        # print('params:',params)
+        down_url = book_html.xpath("//div[@id='download']//a[contains(@type,'text/plain')]/@href")
+        down_url_html = book_html.xpath("//div[@id='download']//a[contains(@type,'text/html')]/@href")
+        # print('down_url:', down_url)
         name = validateTitle(params['title'])
         if not name:
             name = params['book_url']
+        name += '.txt'
         if down_url:
             down_url = down_url[0]
+            # print('down_url:', down_url)
             if not down_url.startswith('http'):
                 down_url = 'http:' + down_url
-            name += '.txt'
             async with session.get(down_url) as res:
                 text = await res.text(encoding='utf-8')
                 with open(name, 'w', encoding='utf-8') as f:
                     f.write(text)
             await save(params)
-        elif down_url_epub:
-            down_url_epub = down_url_epub[-1]
-            if not down_url_epub.startswith('http'):
-                down_url_epub = 'http' + down_url_epub
-            name += '.epub'
-            async with session.get(down_url_epub) as res:
-                text = await res.text(encoding='utf-8')
-                with open(name, 'w', encoding='utf-8') as f:
-                    f.write(text)
-            await save(params)
+        elif down_url_html:
+            # print('down_url_html:', down_url_html)
+            down_url_html = down_url_html[0]
+            if not down_url_html.startswith('http'):
+                down_url_html = 'http:' + down_url_html
+            async with session.get(down_url_html) as res:
+                content_text = await res.read()
+                content_text = etree.HTML(content_text)
+                content_text = content_text.xpath("//body//*/text()")
+                if content_text:
+                    with open(name, 'w', encoding='utf-8') as f:
+                        for txt in content_text:
+                            if txt.strip():
+                                f.write(txt)
+                    await save(params)
         else:
-            print('download fail!')
+            print('download fail....:', params['book_url'])
 
 async def parse(session, url):
     shelf_text =  await fetch_get(session, url)
@@ -112,7 +119,7 @@ async def fetch_main():
 
         for main_category in main_categories:
             main_category = 'http://www.gutenberg.org' + main_category
-            print('main_category', main_category)
+            # print('main_category', main_category)
             await parse(session, main_category)
 
 
