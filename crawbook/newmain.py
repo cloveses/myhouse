@@ -9,7 +9,7 @@ from models import *
 from lxml import etree
 # URL    = 'https://manybooks.net/search-book?language=All&field_genre%5B10%5D=10&search=&sort_by=field_downloads'
 FBASE_URL = "https://manybooks.net/search-book?language=All&search=&sort_by=field_downloads&page="
-BASE_URL = "https://manybooks.net/search-book?language=All&field_genre%5B%s%5D=%s&search=&sort_by=field_downloads&page=%s"
+BASE_URL = "https://manybooks.net/search-book?language=All&field_genre%5B{}%5D={}&search=&sort_by=field_downloads&page={}"
 BOOK_URL = "https://manybooks.net"
 
 def validateTitle(title):
@@ -47,10 +47,10 @@ async def save(params):
     params['tags'] = ','.join(params['tags'])
     with db_session:
         try:
-            if hasattr(BookInfo,'writer'):
+            if hasattr(Book,'writer'):
                 b = BookInfo(**params)
             else:
-                print(BookInfo)
+                print(Book)
         except:
             pass
 
@@ -59,7 +59,7 @@ async def filter_urls(book_urls):
     new_urls = []
     for book_url in book_urls:
         with db_session:
-            if not exists(b for b in BookInfo if b.book_url==book_url):
+            if not exists(b for b in Book if b.book_url==book_url):
                 new_urls.append(book_url)
     return new_urls
 
@@ -110,6 +110,7 @@ async def fetch_login():
         async with session.post('https://manybooks.net/mnybks-login-form?_wrapper_format=drupal_modal&ajax_form=1&_wrapper_format=drupal_ajax',data=params) as res:
             # print(res.cookies['_ga'],res.cookies['_gid'])
             text = await res.text(encoding='utf-8')
+            print(text)
 
         #获取分类
         async with session.get('https://manybooks.net/search-book?language=All&sort_by=field_downloads') as res:
@@ -117,13 +118,13 @@ async def fetch_login():
             text = await res.text(encoding='utf-8')
             genre_html = etree.HTML(text)
             genres = genre_html.xpath("//input[contains(@name,'field_genre[')]/@value")
-            print(genres)
+            # print(genres)
 
         #按分类获取
         for genre in genres:
             genres_urls = []
             page = '0'
-            current_url = BASE_URL % (genre,genre,page)
+            current_url = BASE_URL.format(genre,genre,page)
             genres_urls.append(current_url)
             #获取页数
             async with session.get(current_url) as res:
@@ -135,27 +136,27 @@ async def fetch_login():
                     page_num = page_num[-1]
                     page_num = page_num[page_num.index('page=') + len('page='):]
                     page_num = int(page_num) + 1
-                    for i in page_num(1,page_num):
-                        genres_urls.append(BASE_URL % (genre,genre,str(i)))
+                    for i in range(1,page_num):
+                        genres_urls.append(BASE_URL.format(genre,genre,str(i)))
+            # print(genres_urls)
 
             #获取某目录页中所有书
-            for i in range(72,page_num):
-                print('page:',i)
-                outline_page_url = BASE_URL+str(i)
+            for outline_page_url in genres_urls:
                 outline_html = await fetch_get(session, outline_page_url)
                 outline_html = etree.HTML(outline_html)
                 outline_urls = outline_html.xpath("//div[@class='content']//a/@href")
                 outline_urls = await filter_urls(outline_urls)
-                asyncio.sleep(random.randint(12,25))
+                asyncio.sleep(random.randint(3,12))
                 # 获取每本书信息
                 for book_url in outline_urls:
+                    print(book_url)
                     book_url = BOOK_URL + book_url
                     book_html = await fetch_get(session, book_url)
                     book_html = etree.HTML(book_html)
                     down_url,title = await parse_book(book_html, book_url[len(BOOK_URL):])
                     if down_url:
                         # print(down_url,title)
-                        asyncio.sleep(random.randint(5,25))
+                        asyncio.sleep(random.randint(3,12))
                         title = validateTitle(title)
                         if not title:
                             title = validateTitle(book_url)
