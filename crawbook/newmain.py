@@ -151,7 +151,10 @@ async def fetch_login():
                 for book_url in outline_urls:
                     print(book_url)
                     book_url = BOOK_URL + book_url
-                    book_html = await fetch_get(session, book_url)
+                    try:
+                        book_html = await fetch_get(session, book_url)
+                    except:
+                        continue
                     book_html = etree.HTML(book_html)
                     down_url,title = await parse_book(book_html, book_url[len(BOOK_URL):])
                     if down_url:
