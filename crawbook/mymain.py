@@ -103,7 +103,10 @@ async def parse(session, url):
     book_urls, sub_category_urls = parse_sub(shelf_html)
 
     for book_url in book_urls:
-        await get_book(session, book_url)
+        try:
+            await get_book(session, book_url)
+        except:
+            print('get book Failed:',book_url)
 
     for sub_category_url in sub_category_urls:
         if not sub_category_url.startswith('http'):
@@ -111,7 +114,7 @@ async def parse(session, url):
         try:
             await parse(session, sub_category_url)
         except:
-            print('Failed:',sub_category_url)
+            print('Category get Failed:',sub_category_url)
 
 async def fetch_main():
     async with aiohttp.ClientSession() as session:

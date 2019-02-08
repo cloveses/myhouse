@@ -48,7 +48,7 @@ async def save(params):
     with db_session:
         try:
             if hasattr(Book,'writer'):
-                b = BookInfo(**params)
+                b = Book(**params)
             else:
                 print(Book)
         except:
