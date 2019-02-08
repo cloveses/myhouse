@@ -98,7 +98,11 @@ async def get_book(session, url):
             print('download fail....:', params['book_url'])
 
 async def parse(session, url):
-    shelf_text =  await fetch_get(session, url)
+    try:
+        shelf_text =  await fetch_get(session, url)
+    except:
+        print('Failed url:',url)
+        return
     shelf_html = etree.HTML(shelf_text)
     book_urls, sub_category_urls = parse_sub(shelf_html)
 

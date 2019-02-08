@@ -113,12 +113,16 @@ async def fetch_login():
             print(text)
 
         #获取分类
-        async with session.get('https://manybooks.net/search-book?language=All&sort_by=field_downloads') as res:
-            # print(res.cookies['_ga'],res.cookies['_gid'])
-            text = await res.text(encoding='utf-8')
-            genre_html = etree.HTML(text)
-            genres = genre_html.xpath("//input[contains(@name,'field_genre[')]/@value")
-            # print(genres)
+        try:
+            async with session.get('https://manybooks.net/search-book?language=All&sort_by=field_downloads') as res:
+                # print(res.cookies['_ga'],res.cookies['_gid'])
+                text = await res.text(encoding='utf-8')
+                genre_html = etree.HTML(text)
+                genres = genre_html.xpath("//input[contains(@name,'field_genre[')]/@value")
+                # print(genres)
+        except:
+            print('Do not get genres!')
+            return
 
         #按分类获取
         for genre in genres:
@@ -127,25 +131,37 @@ async def fetch_login():
             current_url = BASE_URL.format(genre,genre,page)
             genres_urls.append(current_url)
             #获取页数
-            async with session.get(current_url) as res:
-                # print(res.cookies['_ga'],res.cookies['_gid'])
-                text = await res.text(encoding='utf-8')
-                pagenum_html = etree.HTML(text)
-                page_num = pagenum_html.xpath('//a[@title="Go to last page"]/@href')
-                if page_num:
-                    page_num = page_num[-1]
-                    page_num = page_num[page_num.index('page=') + len('page='):]
-                    page_num = int(page_num) + 1
-                    for i in range(1,page_num):
-                        genres_urls.append(BASE_URL.format(genre,genre,str(i)))
+            try:
+                async with session.get(current_url) as res:
+                    # print(res.cookies['_ga'],res.cookies['_gid'])
+                    text = await res.text(encoding='utf-8')
+                    pagenum_html = etree.HTML(text)
+                    page_num = pagenum_html.xpath('//a[@title="Go to last page"]/@href')
+                    if page_num:
+                        page_num = page_num[-1]
+                        page_num = page_num[page_num.index('page=') + len('page='):]
+                        page_num = int(page_num) + 1
+                        for i in range(1,page_num):
+                            genres_urls.append(BASE_URL.format(genre,genre,str(i)))
+            except:
+                print('current_url:', current_url)
+                continue
             # print(genres_urls)
 
             #获取某目录页中所有书
             for outline_page_url in genres_urls:
-                outline_html = await fetch_get(session, outline_page_url)
+                try:
+                    outline_html = await fetch_get(session, outline_page_url)
+                except:
+                    print('outline_html failed:', outline_page_url)
+                    continue
                 outline_html = etree.HTML(outline_html)
                 outline_urls = outline_html.xpath("//div[@class='content']//a/@href")
-                outline_urls = await filter_urls(outline_urls)
+                try:
+                    outline_urls = await filter_urls(outline_urls)
+                except:
+                    print('outline_urls failed:', outline_urls)
+                    continue
                 asyncio.sleep(random.randint(3,12))
                 # 获取每本书信息
                 for book_url in outline_urls:
@@ -154,6 +170,7 @@ async def fetch_login():
                     try:
                         book_html = await fetch_get(session, book_url)
                     except:
+                        print('failed book_url:',book_url)
                         continue
                     book_html = etree.HTML(book_html)
                     down_url,title = await parse_book(book_html, book_url[len(BOOK_URL):])
@@ -163,10 +180,13 @@ async def fetch_login():
                         title = validateTitle(title)
                         if not title:
                             title = validateTitle(book_url)
-                        async with session.get(BOOK_URL+down_url) as res:
-                            text = await res.text(encoding='utf-8')
-                            with open(title + '.txt', 'w', encoding='utf-8') as f:
-                                f.write(text)
+                        try:
+                            async with session.get(BOOK_URL+down_url) as res:
+                                text = await res.text(encoding='utf-8')
+                                with open(title + '.txt', 'w', encoding='utf-8') as f:
+                                    f.write(text)
+                        except:
+                            print('field_downloads:', BOOK_URL+down_url)
 
 
 loop = asyncio.get_event_loop()
