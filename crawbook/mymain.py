@@ -108,7 +108,10 @@ async def parse(session, url):
     for sub_category_url in sub_category_urls:
         if not sub_category_url.startswith('http'):
             sub_category_url = 'http://www.gutenberg.org' + sub_category_url
-        await parse(session, sub_category_url)
+        try:
+            await parse(session, sub_category_url)
+        except:
+            print('Failed:',sub_category_url)
 
 async def fetch_main():
     async with aiohttp.ClientSession() as session:
