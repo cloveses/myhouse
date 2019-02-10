@@ -61,6 +61,8 @@ async def filter_urls(book_urls):
         with db_session:
             if not exists(b for b in Book if b.book_url==book_url):
                 new_urls.append(book_url)
+            else:
+                print('repeated:', book_url)
     return new_urls
 
 async def parse_book(html, book_url):
