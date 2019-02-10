@@ -105,7 +105,7 @@ async def fetch_login():
             params['email'] = '45021972@qq.com'
             params['pass'] = 'cloveses'
             # print(params)
-        asyncio.sleep(random.randint(12,25))
+        asyncio.sleep(random.randint(2,5))
         #第三次请求登录
         async with session.post('https://manybooks.net/mnybks-login-form?_wrapper_format=drupal_modal&ajax_form=1&_wrapper_format=drupal_ajax',data=params) as res:
             # print(res.cookies['_ga'],res.cookies['_gid'])
@@ -125,6 +125,7 @@ async def fetch_login():
             return
 
         #按分类获取
+        print('genres', genres)
         for genre in genres:
             genres_urls = []
             page = '0'
@@ -149,6 +150,7 @@ async def fetch_login():
             # print(genres_urls)
 
             #获取某目录页中所有书
+            print('genres_urls', genres_urls)
             for outline_page_url in genres_urls:
                 try:
                     outline_html = await fetch_get(session, outline_page_url)
@@ -162,8 +164,10 @@ async def fetch_login():
                 except:
                     print('outline_urls failed:', outline_urls)
                     continue
-                asyncio.sleep(random.randint(3,12))
+                asyncio.sleep(random.randint(3,8))
+
                 # 获取每本书信息
+                print('outline_urls', outline_urls)
                 for book_url in outline_urls:
                     print(book_url)
                     book_url = BOOK_URL + book_url
@@ -175,8 +179,8 @@ async def fetch_login():
                     book_html = etree.HTML(book_html)
                     down_url,title = await parse_book(book_html, book_url[len(BOOK_URL):])
                     if down_url:
-                        # print(down_url,title)
-                        asyncio.sleep(random.randint(3,12))
+                        print(down_url,title)
+                        asyncio.sleep(random.randint(3,8))
                         title = validateTitle(title)
                         if not title:
                             title = validateTitle(book_url)

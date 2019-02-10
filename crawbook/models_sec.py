@@ -11,6 +11,9 @@ class Book(db.Entity):
     tags = Required(str)
     book_url = Required(str)
 
+class Visited(db.Entity):
+    url = Required(str)
+
 # set_sql_debug(True)
 filename = os.path.join(os.path.abspath(os.curdir),'my_sec.db')
 db.bind(provider='sqlite', filename=filename, create_db=True)

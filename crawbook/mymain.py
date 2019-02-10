@@ -4,14 +4,9 @@ import random
 import json
 import time
 import re
-# import requests
 from models_sec import *
 from lxml import etree
-# URL    = 'https://manybooks.net/search-book?language=All&field_genre%5B10%5D=10&search=&sort_by=field_downloads'
 FBASE_URL = "http://www.gutenberg.org/wiki/Category:Bookshelf"
-# "//www.gutenberg.org/ebooks/16460"
-# BASE_URL = "https://manybooks.net/search-book?language=All&field_genre%5B{}%5D={}&search=&sort_by=field_downloads&page={}"
-# BOOK_URL = "https://manybooks.net"
 
 def validateTitle(title):
     rstr = r"[\/\\\:\*\?\"\<\>\|]"  # '/ \ : * ? " < > |'
@@ -19,7 +14,7 @@ def validateTitle(title):
     return new_title
 
 async def fetch_get(session, url):
-    asyncio.sleep(random.randint(3,9))
+    asyncio.sleep(random.randint(3,6))
     # print('get:', url)
     async with session.get(url) as response:
         return await response.text(encoding='utf-8')
@@ -62,6 +57,7 @@ async def get_book(session, url):
         if 'by' in params['title']:
             params['title'] = params['title'][:params['title'].index('by')].strip()
         # print('params:',params)
+        await save(params)
         down_url = book_html.xpath("//div[@id='download']//a[contains(@type,'text/plain')]/@href")
         down_url_html = book_html.xpath("//div[@id='download']//a[contains(@type,'text/html')]/@href")
         # print('down_url:', down_url)
@@ -97,7 +93,29 @@ async def get_book(session, url):
         else:
             print('download fail....:', params['book_url'])
 
+
+@db_session
+def save_visited(url):
+    Visited(url=url)
+
+@db_session
+def ignore_visited(url):
+    return exists(u for u in Visited if u.url==url)
+
+def filter_special(url):
+    values = ('Help:Logging_in', 'Special:Search', 'Help:Change', '_How-To',
+        '_How_should_I_report_them', 'Gutenberg:Contact_Information',
+        'wiki/Main_Page', 'Bookshelf_How-To', 'User_talk:')
+    for value in values:
+        if value in url:
+            return True
+
 async def parse(session, url):
+    print('url:',url)
+    if ignore_visited(url):
+        return
+    else:
+        save_visited(url)
     try:
         shelf_text =  await fetch_get(session, url)
     except:
@@ -112,6 +130,8 @@ async def parse(session, url):
         except:
             print('get book Failed:',book_url)
 
+    sub_category_urls = [u for u in sub_category_urls if not filter_special(u)]
+    # print('levels:','\n',book_urls,'\n',sub_category_urls)
     for sub_category_url in sub_category_urls:
         if not sub_category_url.startswith('http'):
             sub_category_url = 'http://www.gutenberg.org' + sub_category_url
@@ -126,10 +146,25 @@ async def fetch_main():
         shelf_text = await fetch_get(session, FBASE_URL)
         shelf_html = etree.HTML(shelf_text)
         main_categories = shelf_html.xpath("//div[@id='mw-subcategories']//a/@href")
+        second_categories = shelf_html.xpath("//div[@id='mw-pages']//a[contains(@href,'/wiki/')]/@href")
+        main_categories.extend(second_categories)
+        second_category_url = shelf_html.xpath("//div[@id='mw-pages']//a[1]/@href")
+        if second_category_url:
+            second_category_url = second_category_url[0]
+            if not second_category_url.startswith('http'):
+                second_category_url = 'http:' + second_category_url
+            try:
+                second_category_text = await fetch_get(session, second_category_url)
+                second_category_html = etree.HTML(second_category_text)
+                second_categories = second_category_html.xpath("//div[@id='mw-pages']//a[contains(@href,'/wiki/')]/@href")
+                main_categories.extend(second_categories)
+            except:
+                print('second_category_url failed!')
+        # print(main_categories) 
 
         for main_category in main_categories:
             main_category = 'http://www.gutenberg.org' + main_category
-            # print('main_category', main_category)
+            print('main_category', main_category)
             await parse(session, main_category)
 
 
