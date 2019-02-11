@@ -11,6 +11,7 @@ class Book(db.Entity):
     downloads = Optional(int)
     tags = Optional(str)
     book_url = Required(str)
+    visited = Required(int, default=0)
 
 # set_sql_debug(True)
 filename = os.path.join(os.path.abspath(os.curdir),'my.db')
