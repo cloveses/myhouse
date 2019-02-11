@@ -4,12 +4,12 @@ from pony.orm import *
 db = Database()
 
 class Book(db.Entity):
-    title = Required(str)
-    writer = Required(str)
-    published = Required(int)
-    pages = Required(int)
-    downloads = Required(int)
-    tags = Required(str)
+    title = Optional(str)
+    writer = Optional(str)
+    published = Optional(int)
+    pages = Optional(int)
+    downloads = Optional(int)
+    tags = Optional(str)
     book_url = Required(str)
 
 # set_sql_debug(True)
