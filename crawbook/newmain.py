@@ -74,7 +74,7 @@ async def main():
                 print(search_url)
                 tasks.append(asyncio.ensure_future(get_book_urls(session,search_url)))
             tasks.append(asyncio.ensure_future(fetch_login()))
-            return await asyncio.gather(*tasks)
+            await asyncio.wait(tasks)
 
 def validateTitle(title):
     rstr = r"[\/\\\:\*\?\"\<\>\|]"  # '/ \ : * ? " < > |'
@@ -213,7 +213,7 @@ async def fetch_login():
                     for book in books:
                         print('add task:', book.book_url)
                         tasks.append(asyncio.ensure_future(get_one_book(session, book.book_url)))
-                    await asyncio.gather(*tasks)
+                    await asyncio.wait(tasks)
 
 
 if __name__ == '__main__':
