@@ -17,6 +17,7 @@ sem = asyncio.Semaphore(30)
 
 @db_session
 def save_url(urls):
+    print('目录页URL：',set(urls))
     for url in set(urls):
         # print('url:', url)
         if url.startswith('/titles') and url.endswith('.html') and\
@@ -71,7 +72,7 @@ async def main():
             tasks = []
             for page in range(1, page_num+1): # page_num+1
                 search_url = SEARCH_URL.format(params['ga_submit'],page)
-                print(search_url)
+                # print(search_url)
                 tasks.append(asyncio.ensure_future(get_book_urls(session,search_url)))
             tasks.append(asyncio.ensure_future(fetch_login()))
             await asyncio.wait(tasks)
@@ -145,7 +146,7 @@ async def parse_book(html, book_url):
 
 async def get_one_book(session, book_url):
     async with sem:
-        print(book_url)
+        print('get book:', book_url)
         book_url = MAIN_URL + book_url
         try:
             book_html = await fetch_get(session, book_url)
@@ -155,7 +156,7 @@ async def get_one_book(session, book_url):
         book_html = etree.HTML(book_html)
         down_url,title = await parse_book(book_html, book_url[len(MAIN_URL):])
         if down_url:
-            print(down_url,title)
+            # print(down_url,title)
             asyncio.sleep(random.randint(1,4))
             title = validateTitle(title)
             if not title:
@@ -201,17 +202,16 @@ async def fetch_login():
             while True:
                 books = None
                 with db_session:
-                    books = select(b for b in Book_v2 if b.visited==0)[:20]
-                if not books and counts >= 6000:
-                    break
-                elif not books :
+                    books = select(b for b in Book_v2 if b.visited==0)[:10]
+                if not books:
                     asyncio.sleep(counts * 2)
-                    counts += 1
+                    if counts < 60:
+                        counts += 1
                     continue
                 else:
                     tasks = []
                     for book in books:
-                        print('add task:', book.book_url)
+                        # print('add task:', book.book_url)
                         tasks.append(asyncio.ensure_future(get_one_book(session, book.book_url)))
                     await asyncio.wait(tasks)
 
