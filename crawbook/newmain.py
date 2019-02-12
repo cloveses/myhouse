@@ -71,6 +71,8 @@ async def main():
 
             tasks = []
             for page in range(1, page_num+1): # page_num+1
+                if i % 10 == 0:
+                    asyncio.sleep(240)
                 search_url = SEARCH_URL.format(params['ga_submit'],page)
                 # print(search_url)
                 tasks.append(asyncio.ensure_future(get_book_urls(session,search_url)))
@@ -200,6 +202,7 @@ async def fetch_login():
                 # 获取每本书信息
             counts = 1
             while True:
+                asyncio.sleep(300)
                 books = None
                 with db_session:
                     books = select(b for b in Book_v2 if b.visited==0)[:10]
