@@ -19,8 +19,10 @@ sem = asyncio.Semaphore(30)
 def save_url(urls):
     for url in set(urls):
         # print('url:', url)
-        if url.startswith('/titles') and url.endswith('.html') and not exists(b for b in Book if b.book_url==url):
-            Book(book_url=url)
+        if url.startswith('/titles') and url.endswith('.html') and\
+            not exists(b for b in Book_v2 if b.book_url==url) and \
+            not exists(b for b in Book if b.book_url==url):
+            Book_v2(book_url=url)
 
 async def fetch_get(session, url):
     async with sem:
@@ -67,7 +69,7 @@ async def main():
             save_url(foutline_urls)
 
             tasks = []
-            for page in range(1,page_num+1):
+            for page in range(1, page_num+1): # page_num+1
                 search_url = SEARCH_URL.format(params['ga_submit'],page)
                 print(search_url)
                 tasks.append(asyncio.ensure_future(get_book_urls(session,search_url)))
@@ -103,18 +105,18 @@ async def save(params, book_url):
         params['downloads'] = 0
     params['tags'] = ','.join(params['tags'])
     with db_session:
-        book = select(b for b in Book if b.book_url==book_url).first()
+        book = select(b for b in Book_v2 if b.book_url==book_url).first()
         if book:
-            for k,v in params:
+            for k,v in params.items():
                 setattr(book, k, v)
             book.visited = 1
         else:
             print('update error:', book_url)
         # try:
-        #     if hasattr(Book,'writer'):
-        #         b = Book(**params)
+        #     if hasattr(Book_v2,'writer'):
+        #         b = Book_v2(**params)
         #     else:
-        #         print(Book)
+        #         print(Book_v2)
         # except:
         #     pass
 
@@ -184,7 +186,7 @@ async def fetch_login():
                 params['ajax_page_state[theme]'] = 'mnybks'
                 params['ajax_page_state[theme_token]'] = ''
                 params['ajax_page_state[libraries]'] = "bootstrap/popover,bootstrap/tooltip,comment/drupal.comment-by-viewer,core/drupal.autocomplete,core/drupal.dialog.ajax,core/drupal.dialog.ajax,core/html5shiv,google_analytics/google_analytics,mnybks/bootstrap-scripts,mnybks/gleam-script,mnybks/global-styling,mnybks/read-more,mnybks_main/mnybks_main.commands,mnybks_owl/mnybks-owl.custom,mnybks_owl/mnybks-owl.slider,mnybks_seo/mnybks-seo.mouseflow,mnybks_statistic/mnybks_statistic.book-read-statistic-sender,mnybks_statistic/mnybks_statistic.mb-book-stats,paragraphs/drupal.paragraphs.unpublished,system/base,views/views.ajax,views/views.module"
-                params['email'] = '45021972@qq.com'
+                params['email'] = 'cloveses@126.com' # '45021972@qq.com'
                 params['pass'] = 'cloveses'
                 # print(params)
             asyncio.sleep(random.randint(2,5))
@@ -195,12 +197,17 @@ async def fetch_login():
                 print(text)
 
                 # 获取每本书信息
+            counts = 1
             while True:
                 books = None
                 with db_session:
-                    books = select(b for b in Book if b.visited==0)[:20]
-                if not books:
+                    books = select(b for b in Book_v2 if b.visited==0)[:20]
+                if not books and counts >= 6000:
                     break
+                elif not books :
+                    asyncio.sleep(counts * 2)
+                    counts += 1
+                    continue
                 else:
                     tasks = []
                     for book in books:
