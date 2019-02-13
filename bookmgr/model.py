@@ -11,9 +11,9 @@ class BookDb(db.Entity):
     bookname = Required(str)
     author = Required(str)
     category = Required(str)
-    price = Required(str)
+    price = Required(float)
     desc = Required(str)
-    publish_date = Required(str)
+    # publish_date = Required(str)
 
 # set_sql_debug(True)
 filename = os.path.join(os.path.abspath(os.curdir),'my.db')

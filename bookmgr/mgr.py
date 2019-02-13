@@ -8,6 +8,9 @@ def register():
     psd2 = input("请确认密码：")
     if (not username) or (not psd) or (not psd2):
         return '用户名和密码等输入项均不能为空！'
+
+    if psd.isdigit() or psd.isalpha() or len(psd) < 6:
+        return '密码最小6位，并包含字母和数字！'
         
     if not psd == psd2:
         return '确认密码不匹配！'
@@ -45,9 +48,9 @@ def changePassword(username, psd, psd2):
 @db_session
 def selectAllbook():
     try:
-        for book in BookDb.select():
-            print('书名\t作者\t分类\t价格\t描述')
-            print(book.bookname,book.author,book.category,book.price,book.desc,book.publish_date)
+        print('书名\t作者\t分类\t价格\t描述')
+        for book in select(b for b in BookDb):
+            print(book.bookname,book.author,book.category,book.price,book.desc)
         return 'success'
     except:
         return '失败！'
@@ -56,31 +59,37 @@ def selectAllbook():
 def selectOneBookByName(bookname):
     book = select(b for b in BookDb if b.bookname==bookname).first()
     if book:
-        return (book.bookname,book.author,book.category,book.price,book.desc,book.publish_date)
+        return (book.bookname,book.author,book.category,str(book.price),book.desc)
     else:
         return '书籍不存在！'
 
 @db_session
 def selectBooksByPrice(minprice, maxprice):
+    try:
+        minprice = float(minprice)
+        maxprice = float(maxprice)
+    except:
+        return '价格输入错误！'
     if maxprice <= minprice:
         return '价格范围错误！'
     books = select(b for b in BookDb if between(b.price, minprice, maxprice))
     if not books:
         return '书籍不存在！'
     else:
-        return [(book.bookname,book.author,book.category,book.price,book.desc,book.publish_date) for book in books]
+        return [(book.bookname,book.author,book.category,str(book.price),book.desc) for book in books]
 
 
 @db_session
 def addOneBook(params):
     try:
-        float(params['price'])
+        params['price'] = float(params['price'])
     except:
         return '价格输入错误！'
     params = {k:v for k,v in params.items() if v}
     if len(params) < 5:
         return '书籍参数不足！'
     BookDb(**params)
+    return True
 
 @db_session
 def modifyOneBookByName(bookname, author, price, category, desc):
@@ -88,7 +97,7 @@ def modifyOneBookByName(bookname, author, price, category, desc):
     if not book:
         return '书籍不存在！'
     try:
-        float(price)
+        price = float(price)
     except:
         return '价格输入错误！'
     book.author = author
@@ -99,6 +108,8 @@ def modifyOneBookByName(bookname, author, price, category, desc):
 
 @db_session
 def deleteOneBookByName(bookname):
+    if not bookname:
+        return '书名不能为空！'
     book = BookDb.get(bookname=bookname)
     if not book:
         return '书籍不存在！'
@@ -152,7 +163,7 @@ def manageBook():
 
         elif select == '4':
             params = {}
-            params['bookName'] = input("请输入书名：")
+            params['bookname'] = input("请输入书名：")
             params['author'] = input("请输入作者：")
             params['category'] = input("请输入分类：")
             params['price'] = input("请输入价格：")
@@ -166,7 +177,7 @@ def manageBook():
                 print("添加失败")
 
         elif select == '5':
-            bookName = input("请输入书名：")
+            bookname = input("请输入书名：")
             ret = deleteOneBookByName(bookname)
             if isinstance(ret, str):
                 print(ret)
@@ -176,7 +187,7 @@ def manageBook():
                 print("删除失败")
 
         elif select == '6':
-            bookName = input("请输入书名：")
+            bookname = input("请输入书名：")
             author = input("请输入作者：")
             category = input("请输入分类：")
             price = input("请输入价格：")
