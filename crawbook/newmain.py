@@ -71,11 +71,16 @@ async def main():
 
             tasks = []
             for page in range(1, page_num+1): # page_num+1
+                part_tasks = []
                 if i % 10 == 0:
                     asyncio.sleep(240)
+                    await asyncio.wait(part_tasks)
+                    part_tasks = []
                 search_url = SEARCH_URL.format(params['ga_submit'],page)
                 # print(search_url)
-                tasks.append(asyncio.ensure_future(get_book_urls(session,search_url)))
+                task = asyncio.ensure_future(get_book_urls(session,search_url))
+                part_tasks.append(task)
+                tasks.append(task)
             tasks.append(asyncio.ensure_future(fetch_login()))
             await asyncio.wait(tasks)
 
@@ -83,6 +88,11 @@ def validateTitle(title):
     rstr = r"[\/\\\:\*\?\"\<\>\|]"  # '/ \ : * ? " < > |'
     new_title = re.sub(rstr, "_", title)  # 替换为下划线
     return new_title
+
+@db_session
+def quit():
+    if count(c for c in Book_v2) >= 61460:
+        return True
 
 def parse_login_data(html):
     params = {}
@@ -141,6 +151,7 @@ async def parse_book(html, book_url):
     # print(down_url)
     if down_url:
         down_url = down_url[-1]
+        params['down_url'] = down_url
         await save(params, book_url)
     else:
         down_url = ''
@@ -189,7 +200,7 @@ async def fetch_login():
                 params['ajax_page_state[theme]'] = 'mnybks'
                 params['ajax_page_state[theme_token]'] = ''
                 params['ajax_page_state[libraries]'] = "bootstrap/popover,bootstrap/tooltip,comment/drupal.comment-by-viewer,core/drupal.autocomplete,core/drupal.dialog.ajax,core/drupal.dialog.ajax,core/html5shiv,google_analytics/google_analytics,mnybks/bootstrap-scripts,mnybks/gleam-script,mnybks/global-styling,mnybks/read-more,mnybks_main/mnybks_main.commands,mnybks_owl/mnybks-owl.custom,mnybks_owl/mnybks-owl.slider,mnybks_seo/mnybks-seo.mouseflow,mnybks_statistic/mnybks_statistic.book-read-statistic-sender,mnybks_statistic/mnybks_statistic.mb-book-stats,paragraphs/drupal.paragraphs.unpublished,system/base,views/views.ajax,views/views.module"
-                params['email'] = 'cloveses@126.com' # '45021972@qq.com'
+                params['email'] = '45021972@qq.com' # '45021972@qq.com'
                 params['pass'] = 'cloveses'
                 # print(params)
             asyncio.sleep(random.randint(2,5))
@@ -202,6 +213,8 @@ async def fetch_login():
                 # 获取每本书信息
             counts = 1
             while True:
+                if quit():
+                    break
                 asyncio.sleep(300)
                 books = None
                 with db_session:

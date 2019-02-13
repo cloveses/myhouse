@@ -11,6 +11,7 @@ class Book(db.Entity):
     downloads = Optional(int)
     tags = Optional(str)
     book_url = Required(str)
+    down_url = Optional(str)
 
 class Book_v2(db.Entity):
     title = Optional(str)
