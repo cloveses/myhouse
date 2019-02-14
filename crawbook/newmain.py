@@ -92,7 +92,7 @@ def validateTitle(title):
 
 @db_session
 def quit():
-    if count(c for c in Book_v2) >= 61460:
+    if count(c for c in Book_v2) >= 61460 and count(c for c in Book if c.visited==0) <= 0:
         return True
 
 def parse_login_data(html):
@@ -231,64 +231,6 @@ async def fetch_login():
                         # print('add task:', book.book_url)
                         tasks.append(asyncio.ensure_future(get_one_book(session, book.book_url)))
                     await asyncio.wait(tasks)
-
-@db_session
-def get_empty_files():
-    files = os.listdir()
-    files = [os.path.splitext(f)[0] for f in files if os.path.isfile(f) and os.lstat(f).st_size == 0]
-    book_urls = []
-    for book in select(b for b in Book_v2):
-        if validateTitle(book.title) in files:
-            book_urls.append(book.book_url)
-    return book_urls
-
-
-async def fetch_again():
-    # asyncio.sleep(120)
-    async with sem:
-        async with aiohttp.ClientSession() as session:
-            # 第一次请求获取cookie
-            async with session.get('https://manybooks.net') as res:
-                # print(res.cookies)
-                asyncio.sleep(random.randint(2,5))
-            # 第二次请求获取登录信息
-            async with session.post('https://manybooks.net/mnybks-login-form?_wrapper_format=drupal_modal') as res:
-                # print(res.cookies)
-                text = await res.text(encoding='utf-8')
-                text = json.loads(text)
-                datas = text[-1]['data']
-                params = parse_login_data(datas)
-                params['ajax_page_state[theme]'] = 'mnybks'
-                params['ajax_page_state[theme_token]'] = ''
-                params['ajax_page_state[libraries]'] = "bootstrap/popover,bootstrap/tooltip,comment/drupal.comment-by-viewer,core/drupal.autocomplete,core/drupal.dialog.ajax,core/drupal.dialog.ajax,core/html5shiv,google_analytics/google_analytics,mnybks/bootstrap-scripts,mnybks/gleam-script,mnybks/global-styling,mnybks/read-more,mnybks_main/mnybks_main.commands,mnybks_owl/mnybks-owl.custom,mnybks_owl/mnybks-owl.slider,mnybks_seo/mnybks-seo.mouseflow,mnybks_statistic/mnybks_statistic.book-read-statistic-sender,mnybks_statistic/mnybks_statistic.mb-book-stats,paragraphs/drupal.paragraphs.unpublished,system/base,views/views.ajax,views/views.module"
-                params['email'] = '45021972@qq.com' # '45021972@qq.com'
-                params['pass'] = 'cloveses'
-                # print(params)
-            asyncio.sleep(random.randint(2,5))
-            #第三次请求登录
-            async with session.post('https://manybooks.net/mnybks-login-form?_wrapper_format=drupal_modal&ajax_form=1&_wrapper_format=drupal_ajax',data=params) as res:
-                # print(res.cookies['_ga'],res.cookies['_gid'])
-                text = await res.text(encoding='utf-8')
-                print(text)
-
-                # 获取每本书信息
-            counts = 1
-            while True:
-                asyncio.sleep(300)
-                books = get_empty_files()
-                if not books:
-                    asyncio.sleep(counts * 2)
-                    if counts < 60:
-                        counts += 1
-                    continue
-                else:
-                    tasks = []
-                    for book in books:
-                        # print('add task:', book.book_url)
-                        tasks.append(asyncio.ensure_future(get_one_book(session, book)))
-                    await asyncio.wait(tasks)
-
-
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
