@@ -5,7 +5,7 @@ import json
 import time
 import re
 import os
-from models import *
+from v2models import *
 from lxml import etree
 # URL    = 'https://manybooks.net/search-book?language=All&field_genre%5B10%5D=10&search=&sort_by=field_downloads'
 # FBASE_URL = "https://manybooks.net/search-book?language=All&search=&sort_by=field_downloads&page="
@@ -22,9 +22,8 @@ def save_url(urls):
     for url in set(urls):
         # print('url:', url)
         if url.startswith('/titles') and url.endswith('.html') and\
-            not exists(b for b in Book_v2 if b.book_url==url) and \
             not exists(b for b in Book if b.book_url==url):
-            Book_v2(book_url=url)
+            Book(book_url=url)
 
 async def fetch_get(session, url):
     async with sem:
@@ -73,7 +72,7 @@ async def main():
             tasks = []
             part_tasks = []
             for page in range(1, page_num+1): # page_num+1
-                if page % 10 == 0:
+                if page % 15 == 0:
                     asyncio.sleep(240)
                     part_tasks = []
                 search_url = SEARCH_URL.format(params['ga_submit'],page)
@@ -81,7 +80,8 @@ async def main():
                 task = asyncio.ensure_future(get_book_urls(session,search_url))
                 part_tasks.append(task)
                 tasks.append(task)
-                await asyncio.wait(part_tasks)
+                if page % 15 == 0:s
+                    await asyncio.wait(part_tasks)
             tasks.append(asyncio.ensure_future(fetch_login()))
             await asyncio.wait(tasks)
 
@@ -92,7 +92,7 @@ def validateTitle(title):
 
 @db_session
 def quit():
-    if count(c for c in Book_v2) >= 61460:
+    if count(c for c in Book) >= 61460:
         return True
 
 def parse_login_data(html):
@@ -119,20 +119,13 @@ async def save(params, book_url):
         params['downloads'] = 0
     params['tags'] = ','.join(params['tags'])
     with db_session:
-        book = select(b for b in Book_v2 if b.book_url==book_url).first()
+        book = select(b for b in Book if b.book_url==book_url).first()
         if book:
             for k,v in params.items():
                 setattr(book, k, v)
             book.visited = 1
         else:
             print('update error:', book_url)
-        # try:
-        #     if hasattr(Book_v2,'writer'):
-        #         b = Book_v2(**params)
-        #     else:
-        #         print(Book_v2)
-        # except:
-        #     pass
 
 async def parse_book(html, book_url):
     params = {}
@@ -170,7 +163,7 @@ async def get_one_book(session, book_url):
         book_html = etree.HTML(book_html)
         down_url,title = await parse_book(book_html, book_url[len(MAIN_URL):])
         if down_url:
-            # print(down_url,title)
+            print(down_url,title)
             asyncio.sleep(random.randint(1,4))
             title = validateTitle(title)
             if not title:
@@ -216,10 +209,10 @@ async def fetch_login():
             while True:
                 if quit():
                     break
-                asyncio.sleep(300)
+                asyncio.sleep(30)
                 books = None
                 with db_session:
-                    books = select(b for b in Book_v2 if b.visited==0)[:10]
+                    books = select(b for b in Book if b.visited==0)[:10]
                 if not books:
                     asyncio.sleep(counts * 2)
                     if counts < 60:
@@ -232,64 +225,65 @@ async def fetch_login():
                         tasks.append(asyncio.ensure_future(get_one_book(session, book.book_url)))
                     await asyncio.wait(tasks)
 
-@db_session
-def get_empty_files():
-    files = os.listdir()
-    files = [os.path.splitext(f)[0] for f in files if os.path.isfile(f) and os.lstat(f).st_size == 0]
-    book_urls = []
-    for book in select(b for b in Book_v2):
-        if validateTitle(book.title) in files:
-            book_urls.append(book.book_url)
-    return book_urls
+# @db_session
+# def get_empty_files():
+#     files = os.listdir()
+#     files = [os.path.splitext(f)[0] for f in files if os.path.isfile(f) and os.lstat(f).st_size == 0]
+#     book_urls = []
+#     for book in select(b for b in Book):
+#         if validateTitle(book.title) in files:
+#             book_urls.append(book.book_url)
+#     return book_urls
 
 
-async def fetch_again():
-    # asyncio.sleep(120)
-    async with sem:
-        async with aiohttp.ClientSession() as session:
-            # 第一次请求获取cookie
-            async with session.get('https://manybooks.net') as res:
-                # print(res.cookies)
-                asyncio.sleep(random.randint(2,5))
-            # 第二次请求获取登录信息
-            async with session.post('https://manybooks.net/mnybks-login-form?_wrapper_format=drupal_modal') as res:
-                # print(res.cookies)
-                text = await res.text(encoding='utf-8')
-                text = json.loads(text)
-                datas = text[-1]['data']
-                params = parse_login_data(datas)
-                params['ajax_page_state[theme]'] = 'mnybks'
-                params['ajax_page_state[theme_token]'] = ''
-                params['ajax_page_state[libraries]'] = "bootstrap/popover,bootstrap/tooltip,comment/drupal.comment-by-viewer,core/drupal.autocomplete,core/drupal.dialog.ajax,core/drupal.dialog.ajax,core/html5shiv,google_analytics/google_analytics,mnybks/bootstrap-scripts,mnybks/gleam-script,mnybks/global-styling,mnybks/read-more,mnybks_main/mnybks_main.commands,mnybks_owl/mnybks-owl.custom,mnybks_owl/mnybks-owl.slider,mnybks_seo/mnybks-seo.mouseflow,mnybks_statistic/mnybks_statistic.book-read-statistic-sender,mnybks_statistic/mnybks_statistic.mb-book-stats,paragraphs/drupal.paragraphs.unpublished,system/base,views/views.ajax,views/views.module"
-                params['email'] = '45021972@qq.com' # '45021972@qq.com'
-                params['pass'] = 'cloveses'
-                # print(params)
-            asyncio.sleep(random.randint(2,5))
-            #第三次请求登录
-            async with session.post('https://manybooks.net/mnybks-login-form?_wrapper_format=drupal_modal&ajax_form=1&_wrapper_format=drupal_ajax',data=params) as res:
-                # print(res.cookies['_ga'],res.cookies['_gid'])
-                text = await res.text(encoding='utf-8')
-                print(text)
+# async def fetch_again():
+#     # asyncio.sleep(120)
+#     async with sem:
+#         async with aiohttp.ClientSession() as session:
+#             # 第一次请求获取cookie
+#             async with session.get('https://manybooks.net') as res:
+#                 # print(res.cookies)
+#                 asyncio.sleep(random.randint(2,5))
+#             # 第二次请求获取登录信息
+#             async with session.post('https://manybooks.net/mnybks-login-form?_wrapper_format=drupal_modal') as res:
+#                 # print(res.cookies)
+#                 text = await res.text(encoding='utf-8')
+#                 text = json.loads(text)
+#                 datas = text[-1]['data']
+#                 params = parse_login_data(datas)
+#                 params['ajax_page_state[theme]'] = 'mnybks'
+#                 params['ajax_page_state[theme_token]'] = ''
+#                 params['ajax_page_state[libraries]'] = "bootstrap/popover,bootstrap/tooltip,comment/drupal.comment-by-viewer,core/drupal.autocomplete,core/drupal.dialog.ajax,core/drupal.dialog.ajax,core/html5shiv,google_analytics/google_analytics,mnybks/bootstrap-scripts,mnybks/gleam-script,mnybks/global-styling,mnybks/read-more,mnybks_main/mnybks_main.commands,mnybks_owl/mnybks-owl.custom,mnybks_owl/mnybks-owl.slider,mnybks_seo/mnybks-seo.mouseflow,mnybks_statistic/mnybks_statistic.book-read-statistic-sender,mnybks_statistic/mnybks_statistic.mb-book-stats,paragraphs/drupal.paragraphs.unpublished,system/base,views/views.ajax,views/views.module"
+#                 params['email'] = '45021972@qq.com' # '45021972@qq.com'
+#                 params['pass'] = 'cloveses'
+#                 # print(params)
+#             asyncio.sleep(random.randint(2,5))
+#             #第三次请求登录
+#             async with session.post('https://manybooks.net/mnybks-login-form?_wrapper_format=drupal_modal&ajax_form=1&_wrapper_format=drupal_ajax',data=params) as res:
+#                 # print(res.cookies['_ga'],res.cookies['_gid'])
+#                 text = await res.text(encoding='utf-8')
+#                 print(text)
 
-                # 获取每本书信息
-            counts = 1
-            while True:
-                asyncio.sleep(300)
-                books = get_empty_files()
-                if not books:
-                    asyncio.sleep(counts * 2)
-                    if counts < 60:
-                        counts += 1
-                    continue
-                else:
-                    tasks = []
-                    for book in books:
-                        # print('add task:', book.book_url)
-                        tasks.append(asyncio.ensure_future(get_one_book(session, book)))
-                    await asyncio.wait(tasks)
+#                 # 获取每本书信息
+#             counts = 1
+#             while True:
+#                 asyncio.sleep(300)
+#                 books = get_empty_files()
+#                 if not books:
+#                     asyncio.sleep(counts * 2)
+#                     if counts < 60:
+#                         counts += 1
+#                     continue
+#                 else:
+#                     tasks = []
+#                     for book in books:
+#                         # print('add task:', book.book_url)
+#                         tasks.append(asyncio.ensure_future(get_one_book(session, book)))
+#                     await asyncio.wait(tasks)
 
 
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     loop.run_until_complete(main())
+    # loop.run_until_complete(fetch_login())
