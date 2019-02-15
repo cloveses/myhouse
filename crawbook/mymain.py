@@ -58,6 +58,8 @@ async def get_book(session, url):
     name = validateTitle(params['title'])
     if not name:
         name = params['book_url']
+    if os.path.exists(name + '.txt'):
+        name += '_1'
     name += '.txt'
     if down_url:
         down_url = down_url[0]
