@@ -76,18 +76,20 @@ async def main():
 
             tasks = []
             part_tasks = []
-            for page in range(1, page_num+1): # page_num+1
+            start = 1098
+            # for page in range(1, page_num+1): # page_num+1
+            for page in range(start, page_num+1): # page_num+1
                 if page % 15 == 0:
                     asyncio.sleep(240)
                     part_tasks = []
                 search_url = SEARCH_URL.format(params['ga_submit'],page)
-                # print(search_url)
+                print(search_url)
                 task = asyncio.ensure_future(get_book_urls(session,search_url))
                 part_tasks.append(task)
                 tasks.append(task)
                 if page % 15 == 0:
                     await asyncio.wait(part_tasks)
-                if page == 10:
+                if page == start + 10:
                     #添加获取书内容的任务
                     tasks.append(asyncio.ensure_future(fetch_login()))
             #添加再次获取下载的文本文件内容为空的任务
@@ -241,10 +243,10 @@ async def fetch_login():
                 params['ajax_page_state[theme]'] = 'mnybks'
                 params['ajax_page_state[theme_token]'] = ''
                 params['ajax_page_state[libraries]'] = "bootstrap/popover,bootstrap/tooltip,comment/drupal.comment-by-viewer,core/drupal.autocomplete,core/drupal.dialog.ajax,core/drupal.dialog.ajax,core/html5shiv,google_analytics/google_analytics,mnybks/bootstrap-scripts,mnybks/gleam-script,mnybks/global-styling,mnybks/read-more,mnybks_main/mnybks_main.commands,mnybks_owl/mnybks-owl.custom,mnybks_owl/mnybks-owl.slider,mnybks_seo/mnybks-seo.mouseflow,mnybks_statistic/mnybks_statistic.book-read-statistic-sender,mnybks_statistic/mnybks_statistic.mb-book-stats,paragraphs/drupal.paragraphs.unpublished,system/base,views/views.ajax,views/views.module"
-                # params['email'] = '45021972@qq.com' # '45021972@qq.com'
-                # params['pass'] = 'cloveses'
-                params['email'] = 'dingaa@126.com' # '45021972@qq.com'
-                params['pass'] = 'dingaa'
+                params['email'] = '45021972@qq.com' # '45021972@qq.com'
+                params['pass'] = 'cloveses'
+                # params['email'] = 'dingaa@126.com' # '45021972@qq.com'
+                # params['pass'] = 'dingaa'
                 print('login info:', params)
             asyncio.sleep(random.randint(2,5))
             #第三次请求登录
