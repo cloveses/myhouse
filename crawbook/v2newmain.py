@@ -14,12 +14,13 @@ MAIN_URL = "https://manybooks.net"
 FSEARCH_URL = "https://manybooks.net/search-book?search=&ga_submit={}"
 SEARCH_URL = "https://manybooks.net/search-book?search=&ga_submit={}&language=All&sort_by=field_downloads&page={}"
 TOTALS = 0
+TIMES_LOGIN = 4000
 
 sem = asyncio.Semaphore(30)
 
 @db_session
 def save_url(urls):
-    print('目录页URL：',set(urls))
+    # print('目录页URL：',set(urls))
     for url in set(urls):
         # print('url:', url)
         if url.startswith('/titles') and url.endswith('.html') and\
@@ -76,8 +77,7 @@ async def main():
 
             tasks = []
             part_tasks = []
-            start = 1098
-            # for page in range(1, page_num+1): # page_num+1
+            start = 0
             for page in range(start, page_num+1): # page_num+1
                 if page % 15 == 0:
                     asyncio.sleep(240)
@@ -89,9 +89,10 @@ async def main():
                 tasks.append(task)
                 if page % 15 == 0:
                     await asyncio.wait(part_tasks)
+                    await asyncio.sleep(25)
                 if page == start + 10:
                     #添加获取书内容的任务
-                    tasks.append(asyncio.ensure_future(fetch_login()))
+                    tasks.append(asyncio.ensure_future(fetch_main()))
             #添加再次获取下载的文本文件内容为空的任务
             # tasks.append(asyncio.ensure_future(fetch_again()))
             await asyncio.wait(tasks)
@@ -222,11 +223,23 @@ async def fetch_again(session):
     for book in books:
         tasks.append(asyncio.ensure_future(get_one_book_txt(session, book[0], book[1])))
     await asyncio.wait(tasks)
+    await asyncio.sleep(25)
 
+async def fetch_main():
+    userdatas = [('dingaa@126.com', 'dingaa'), ('dingbb@126.com', 'dingbb'),('45021972@qq.com', 'cloveses')]
+    i = 0
+    while True:
+        if quit():
+            break
+        await fetch_login(userdatas[i%3])
+        print('sleep 5 minutes...')
+        await asyncio.sleep(5 * 60)
+        i += 1
 
 #登录后获取书
-async def fetch_login():
+async def fetch_login(userdata):
     # asyncio.sleep(120)
+    totals = 0
     async with sem:
         async with aiohttp.ClientSession() as session:
             # 第一次请求获取cookie
@@ -243,10 +256,12 @@ async def fetch_login():
                 params['ajax_page_state[theme]'] = 'mnybks'
                 params['ajax_page_state[theme_token]'] = ''
                 params['ajax_page_state[libraries]'] = "bootstrap/popover,bootstrap/tooltip,comment/drupal.comment-by-viewer,core/drupal.autocomplete,core/drupal.dialog.ajax,core/drupal.dialog.ajax,core/html5shiv,google_analytics/google_analytics,mnybks/bootstrap-scripts,mnybks/gleam-script,mnybks/global-styling,mnybks/read-more,mnybks_main/mnybks_main.commands,mnybks_owl/mnybks-owl.custom,mnybks_owl/mnybks-owl.slider,mnybks_seo/mnybks-seo.mouseflow,mnybks_statistic/mnybks_statistic.book-read-statistic-sender,mnybks_statistic/mnybks_statistic.mb-book-stats,paragraphs/drupal.paragraphs.unpublished,system/base,views/views.ajax,views/views.module"
-                params['email'] = '45021972@qq.com' # '45021972@qq.com'
-                params['pass'] = 'cloveses'
+                # params['email'] = '45021972@qq.com' # '45021972@qq.com'
+                # params['pass'] = 'cloveses'
                 # params['email'] = 'dingaa@126.com' # '45021972@qq.com'
                 # params['pass'] = 'dingaa'
+                params['email'] = userdata[0]
+                params['pass'] = userdata[1]
                 print('login info:', params)
             asyncio.sleep(random.randint(2,5))
             #第三次请求登录
@@ -258,7 +273,7 @@ async def fetch_login():
                 # 获取每本书信息
             counts = 1
             while True:
-                if quit():
+                if quit() or totals >= TIMES_LOGIN:
                     break
                 asyncio.sleep(30)
                 books = None
@@ -272,10 +287,14 @@ async def fetch_login():
                 else:
                     tasks = []
                     for book in books:
+                        totals += 1
                         # print('add task:', book.book_url)
                         tasks.append(asyncio.ensure_future(get_one_book(session, book.book_url)))
                     await asyncio.wait(tasks)
-            await fetch_again(session)
+                    await asyncio.sleep(25)
+            if totals < TIMES_LOGIN:
+                await fetch_again(session)
+                await asyncio.sleep(25)
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
