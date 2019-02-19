@@ -20,14 +20,13 @@ sem = asyncio.Semaphore(30)
 
 @db_session
 def save_url(urls, page):
-    # print('目录页URL：',set(urls))
-    for url in set(urls):
-        # print('url:', url)
-        if url.startswith('/titles') and url.endswith('.html') and\
+    urls = list(urls)[::2][:24]
+    for url in urls:
+        if url.startswith('/titles') and \
             not exists(b for b in Book if b.book_url==url):
             Book(book_url=url, pagenum=page)
         else:
-            print('Repeat or error url:', url)
+            print('Repeat or error url:', url, 'page:', page)
 
 async def fetch_get(session, url):
     async with sem:
@@ -41,28 +40,54 @@ async def get_book_urls(session, url, page):
         urls = html.xpath("//div[@class='content']//a/@href")
         save_url(urls, page)
 
+async def init_params():
+    # 第一次请求获取params
+    async with aiohttp.request('GET',"https://manybooks.net") as r:
+        main_text = await r.text(encoding='utf-8')
+        # print(main_text)
+        main_html = etree.HTML(main_text)
+        params = {}
+        params['form_build_id'] = main_html.xpath("//input[@name='form_build_id']/@value")
+        params['form_id'] = main_html.xpath("//input[@name='form_id']/@value")
+        params['op'] = main_html.xpath("//button[@id='edit-submit']/@value")
+        params['ga_submit'] = main_html.xpath("//input[@name='ga_event']/@value")
+        for k,v in params.items():
+            if v:
+                params[k] = v[0]
+            else:
+                print('No params!')
+                return
+        params['search'] = ''
+        return params
+
 async def init_session(session):
     # 第一次请求获取params
-    main_text = await fetch_get(session, MAIN_URL)
-    main_html = etree.HTML(main_text)
-    params = {}
-    params['form_build_id'] = main_html.xpath("//input[@name='form_build_id']/@value")
-    params['form_id'] = main_html.xpath("//input[@name='form_id']/@value")
-    params['op'] = main_html.xpath("//button[@id='edit-submit']/@value")
-    params['ga_submit'] = main_html.xpath("//input[@name='ga_event']/@value")
-    for k,v in params.items():
-        if v:
-            params[k] = v[0]
-        else:
-            print('No params!')
-            return
-    params['search'] = ''
+    # main_text = await fetch_get(session, MAIN_URL)
+    # main_html = etree.HTML(main_text)
+    # params = {}
+    # params['form_build_id'] = main_html.xpath("//input[@name='form_build_id']/@value")
+    # params['form_id'] = main_html.xpath("//input[@name='form_id']/@value")
+    # params['op'] = main_html.xpath("//button[@id='edit-submit']/@value")
+    # params['ga_submit'] = main_html.xpath("//input[@name='ga_event']/@value")
+    # for k,v in params.items():
+    #     if v:
+    #         params[k] = v[0]
+    #     else:
+    #         print('No params!')
+    #         return
+    # params['search'] = ''
+
+    params = await init_params()
 
     # 第二次POST请求
     async with session.post('https://manybooks.net/search-book',data=params) as res:
         pass
 
     return session, params
+
+@db_session
+def visited_page(page):
+    return exists(b for b in Book if b.pagenum==page)
 
 #获取目录页中书的URL
 async def main():
@@ -80,12 +105,14 @@ async def main():
         global TOTALS
         TOTALS = page_num * 24
         foutline_urls = fsearch_html.xpath("//div[@class='content']//a/@href")
-        save_url(foutline_urls)
+        save_url(foutline_urls, 0)
 
         tasks = []
         part_tasks = []
-        start = 0
+        start = 1
         for page in range(start, page_num+1): # page_num+1
+            if visited_page(page):
+                continue
             if page % 150 == 0 and page != 0:
                 print('UPDATE session...')
                 await asyncio.sleep(1)
@@ -109,8 +136,6 @@ async def main():
             if page == start + 10:
                 #添加获取书内容的任务
                 tasks.append(asyncio.ensure_future(fetch_main()))
-        #添加再次获取下载的文本文件内容为空的任务
-        # tasks.append(asyncio.ensure_future(fetch_again()))
         await asyncio.wait(tasks)
         if not session.closed:
             await session.close()
