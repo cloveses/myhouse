@@ -13,6 +13,7 @@ class Book(db.Entity):
     book_url = Required(str)
     down_url = Optional(str)
     visited = Required(int, default=0)
+    pagenum = Required(int)
 
 # set_sql_debug(True)
 filename = os.path.join(os.path.abspath(os.curdir),'my.db')
