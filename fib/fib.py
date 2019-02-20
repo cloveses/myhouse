@@ -101,6 +101,7 @@ def main(n, filename='result.txt'):
         for data in datas:
             f.write('\t'.join([str(d) for d in data]))
             f.write('\n')
+            f.write('\n')
 
 if __name__ == '__main__':
-    main(21)
+    main(28)
