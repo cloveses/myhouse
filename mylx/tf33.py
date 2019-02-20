@@ -13,25 +13,25 @@ with tf.Session()  as sess:
     sess.run(init_op)
     print(sess.run(y,feed_dict={x:[[0.7,0.5]]}))
 
-async def init_session():
-    # 第一次请求获取params
-    async with aiohttp.request('GET',"https://manybooks.net") as r:
-        main_text = await r.text(encoding='utf-8')
-        # print(main_text)
-        main_html = etree.HTML(main_text)
-        params = {}
-        params['form_build_id'] = main_html.xpath("//input[@name='form_build_id']/@value")
-        params['form_id'] = main_html.xpath("//input[@name='form_id']/@value")
-        params['op'] = main_html.xpath("//button[@id='edit-submit']/@value")
-        params['ga_submit'] = main_html.xpath("//input[@name='ga_event']/@value")
-        for k,v in params.items():
-            if v:
-                params[k] = v[0]
-            else:
-                print('No params!')
-                return
-        params['search'] = ''
-        # print(params)
-    session = aiohttp.ClientSession()
-    async with session.post('https://manybooks.net/search-book',data=params) as res:
-        print(res.status)
+# async def init_session():
+#     # 第一次请求获取params
+#     async with aiohttp.request('GET',"https://manybooks.net") as r:
+#         main_text = await r.text(encoding='utf-8')
+#         # print(main_text)
+#         main_html = etree.HTML(main_text)
+#         params = {}
+#         params['form_build_id'] = main_html.xpath("//input[@name='form_build_id']/@value")
+#         params['form_id'] = main_html.xpath("//input[@name='form_id']/@value")
+#         params['op'] = main_html.xpath("//button[@id='edit-submit']/@value")
+#         params['ga_submit'] = main_html.xpath("//input[@name='ga_event']/@value")
+#         for k,v in params.items():
+#             if v:
+#                 params[k] = v[0]
+#             else:
+#                 print('No params!')
+#                 return
+#         params['search'] = ''
+#         # print(params)
+#     session = aiohttp.ClientSession()
+#     async with session.post('https://manybooks.net/search-book',data=params) as res:
+#         print(res.status)
