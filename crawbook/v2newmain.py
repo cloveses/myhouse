@@ -143,8 +143,12 @@ async def main():
                     await asyncio.sleep(25)
                 if page == start + 10:
                     #添加获取书内容的任务
-                    tasks.append(asyncio.ensure_future(fetch_main()))
-            await asyncio.wait(tasks)
+                    # tasks.append(asyncio.ensure_future(fetch_main()))
+                    get_book_task = asyncio.ensure_future(fetch_main())
+            tasks = tasks.append(get_book_task)
+            await asyncio.wait(tasks[-16:])
+            if not session.closed:
+                await session.close()
         else:
             if not session.closed:
                 await session.close()
