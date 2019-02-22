@@ -29,16 +29,14 @@ def save_url(urls, page):
             print('Repeat or error url:', url, 'page:', page)
 
 async def fetch_get(session, url):
-    async with sem:
-        async with session.get(url) as response:
-            return await response.text(encoding='utf-8')
+    async with session.get(url) as response:
+        return await response.text(encoding='utf-8')
 
 async def get_book_urls(session, url, page):
-    async with sem:
-        text = await fetch_get(session, url)
-        html = etree.HTML(text)
-        urls = html.xpath("//div[@class='content']//a/@href")
-        save_url(urls, page)
+    text = await fetch_get(session, url)
+    html = etree.HTML(text)
+    urls = html.xpath("//div[@class='content']//a/@href")
+    save_url(urls, page)
 
 async def init_params():
     # 第一次请求获取params
@@ -89,6 +87,14 @@ async def init_session(session):
 def visited_page(page):
     return exists(b for b in Book if b.pagenum==page)
 
+@db_session
+def get_max_pagenum():
+    ret = max(b.pagenum for b in Book)
+    if ret is None:
+        return -1
+    else:
+        return ret
+
 #获取目录页中书的URL
 async def main():
     async with sem:
@@ -104,41 +110,46 @@ async def main():
         # page_num = 3
         global TOTALS
         TOTALS = page_num * 24
-        foutline_urls = fsearch_html.xpath("//div[@class='content']//a/@href")
-        save_url(foutline_urls, 0)
 
-        tasks = []
-        part_tasks = []
-        start = 1
-        for page in range(start, page_num+1): # page_num+1
-            if visited_page(page):
-                continue
-            if page % 150 == 0 and page != 0:
-                print('UPDATE session...')
-                await asyncio.sleep(1)
+        if get_max_pagenum() < page_num:
+            foutline_urls = fsearch_html.xpath("//div[@class='content']//a/@href")
+            save_url(foutline_urls, 0)
+
+            tasks = []
+            part_tasks = []
+            start = 1
+            for page in range(start, page_num+1): # page_num+1
+                if visited_page(page):
+                    continue
+                if page % 150 == 0 and page != 0:
+                    print('UPDATE session...')
+                    await asyncio.sleep(1)
+                    await session.close()
+                    session = aiohttp.ClientSession()
+                    session, params = await init_session(session)
+                    print('sleep 180s...')
+                    await asyncio.sleep(3 * 60)
+
+                if page % 15 == 0:
+                    await asyncio.sleep(240)
+                    part_tasks = []
+                search_url = SEARCH_URL.format(params['ga_submit'],page)
+                print(search_url)
+                task = asyncio.ensure_future(get_book_urls(session, search_url, page))
+                part_tasks.append(task)
+                tasks.append(task)
+                if page % 15 == 0:
+                    await asyncio.wait(part_tasks)
+                    await asyncio.sleep(25)
+                if page == start + 10:
+                    #添加获取书内容的任务
+                    tasks.append(asyncio.ensure_future(fetch_main()))
+            await asyncio.wait(tasks)
+        else:
+            if not session.closed:
                 await session.close()
-                session = aiohttp.ClientSession()
-                session, params = await init_session(session)
-                print('sleep 180s...')
-                await asyncio.sleep(3 * 60)
-
-            if page % 15 == 0:
-                await asyncio.sleep(240)
-                part_tasks = []
-            search_url = SEARCH_URL.format(params['ga_submit'],page)
-            print(search_url)
-            task = asyncio.ensure_future(get_book_urls(session, search_url, page))
-            part_tasks.append(task)
-            tasks.append(task)
-            if page % 15 == 0:
-                await asyncio.wait(part_tasks)
-                await asyncio.sleep(25)
-            if page == start + 10:
-                #添加获取书内容的任务
-                tasks.append(asyncio.ensure_future(fetch_main()))
-        await asyncio.wait(tasks)
-        if not session.closed:
-            await session.close()
+            tasks = [asyncio.ensure_future(fetch_main()),]
+            await asyncio.wait(tasks)
 
 
 def validateTitle(title):
@@ -212,31 +223,30 @@ async def parse_book(html, book_url):
 
 #获取一本书的信息及内容
 async def get_one_book(session, book_url):
-    async with sem:
-        print('get book:', book_url)
-        file_name = book_url.split('/')[-1]
-        if file_name.endswith('.html'):
-            file_name = file_name[:-5] + '_html'
-        book_url = MAIN_URL + book_url
+    print('get book:', book_url)
+    file_name = book_url.split('/')[-1]
+    if file_name.endswith('.html'):
+        file_name = file_name[:-5] + '_html'
+    book_url = MAIN_URL + book_url
+    try:
+        book_html = await fetch_get(session, book_url)
+    except:
+        print('failed book_url:',book_url)
+        return
+    book_html = etree.HTML(book_html)
+    down_url,title = await parse_book(book_html, book_url[len(MAIN_URL):])
+    if down_url:
+        print(down_url,title)
+        await asyncio.sleep(random.randint(1,4))
+        file_name = ''.join((down_url.split('/')[-2], '_', file_name, '.txt'))
+        file_name = validateTitle(file_name)
         try:
-            book_html = await fetch_get(session, book_url)
+            async with session.get(MAIN_URL+down_url) as res:
+                text = await res.text(encoding='utf-8')
+                with open(file_name, 'w', encoding='utf-8') as f:
+                    f.write(text)
         except:
-            print('failed book_url:',book_url)
-            return
-        book_html = etree.HTML(book_html)
-        down_url,title = await parse_book(book_html, book_url[len(MAIN_URL):])
-        if down_url:
-            print(down_url,title)
-            await asyncio.sleep(random.randint(1,4))
-            file_name = ''.join((down_url.split('/')[-2], '_', file_name, '.txt'))
-            file_name = validateTitle(file_name)
-            try:
-                async with session.get(MAIN_URL+down_url) as res:
-                    text = await res.text(encoding='utf-8')
-                    with open(file_name, 'w', encoding='utf-8') as f:
-                        f.write(text)
-            except:
-                print('field_downloads:', MAIN_URL+down_url)
+            print('field_downloads:', MAIN_URL+down_url)
 
 # 获取目录下内容为空的文件
 @db_session
@@ -248,17 +258,16 @@ def get_empty_files():
     return book_urls
 
 async def get_one_book_txt(session, down_url, file_name):
-    async with sem:
-        if down_url:
-            await asyncio.sleep(random.randint(1,4))
-            file_name += '.txt'
-            try:
-                async with session.get(MAIN_URL+down_url) as res:
-                    text = await res.text(encoding='utf-8')
-                    with open(file_name, 'w', encoding='utf-8') as f:
-                        f.write(text)
-            except:
-                print('field_downloads:', MAIN_URL+down_url)
+    if down_url:
+        await asyncio.sleep(random.randint(1,4))
+        file_name += '.txt'
+        try:
+            async with session.get(MAIN_URL+down_url) as res:
+                text = await res.text(encoding='utf-8')
+                with open(file_name, 'w', encoding='utf-8') as f:
+                    f.write(text)
+        except:
+            print('field_downloads:', MAIN_URL+down_url)
 
 async def fetch_again(session):
     tasks = []
@@ -340,7 +349,14 @@ async def fetch_login(userdata):
                 await fetch_again(session)
                 await asyncio.sleep(25)
 
-if __name__ == '__main__':
+
+def main_mgr():
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
-    # loop.run_until_complete(fetch_login())
+    try:
+        loop.run_until_complete(main())
+    except ValueError:
+        loop.run_until_complete(fetch_login())
+
+
+if __name__ == '__main__':
+    main_mgr()
