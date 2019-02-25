@@ -6,15 +6,14 @@ import json
 
 host = 'http://getlocat.market.alicloudapi.com'
 path = '/api/getLocationinfor'
-method = 'POST'
 appcode = 'f96f742c99164f0388aa884f44421bd0'
-querys = 'latlng=41.93554%2C118.44361&type=2'
-bodys = {}
-url = host + path + '?' + querys
+params = {'latlng':'41.93554,118.44361', 'type':2}
+url = host + path 
 
-request = request.Request(url)
-request.add_header('Authorization', 'APPCODE ' + appcode)
-response = urllib2.urlopen(request)
+data = parse.urlencode(params).encode(encoding='utf-8')
+r = request.Request(url=url, data=data)
+r.add_header('Authorization', 'APPCODE ' + appcode)
+response = request.urlopen(r)
 content = response.read()
-if (content):
-    print(content)
+if content:
+    print(json.loads(content.decode('utf-8')))
