@@ -1,0 +1,5 @@
+name = input('Please input file\'s name:')
+f = open(name, 'w')
+text = input('Please text:')
+f.write(text)
+f.close()
