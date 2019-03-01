@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>我控制台</title>
+    <script type="text/javascript"  src="{{url_for('static',filename='zepto.min.js')}}"></script>
+    <link rel="stylesheet" href="{{url_for('static', filename='pure-min.css')}}" />
+    <style type="text/css">
+        .button-error {
+            background: rgb(202, 60, 60); /* this is a maroon */
+        }
+
+        button {
+            width: 4em;
+            height: 2em;
+        }
+
+        * {
+            font-size: 2em;
+        }
+
+        #main {
+            margin:0 auto;
+            width: 9em;
+            height: 4em;
+            padding-top: 2em;
+        }
+    </style>
+</head>
+<body>
+    <div id="main">
+        <button class="pure-button pure-button-primary" id="start">开启</button>
+        <button class="button-error pure-button" id="end" disabled="disabled">关闭</button>
+        <input type="hidden" id="pid" name="pid" value="0" />
+    </div>
+    <script type="text/javascript">
+        $(function(){
+            $('#start').on('click',function(){
+                $.getJSON('/start', function(remoteData){
+                  console.log(remoteData);
+                  if (remoteData['status'] == 0){
+                      $('#end').removeAttr('disabled');
+                      $('#start').attr('disabled','disabled');
+                      $('#pid').attr('value',remoteData['pid'])
+                  }else{
+                    alert('启动失败！');
+                  };
+                })
+            });
+
+            $('#end').on('click', function(){
+                var pid = $('#pid').attr('value');
+                $.getJSON('/end/'+ pid, function(remoteData){
+                  console.log(remoteData);
+                  if (remoteData['status'] == 0){
+                      $('#start').removeAttr('disabled');
+                      $('#end').attr('disabled','disabled');
+                  }else{
+                    alert('关闭失败！');
+                  };
+                })
+            })
+        })
+    </script>
+</body>
+</html>
