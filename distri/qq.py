@@ -1,0 +1,162 @@
+from base import *
+
+def dijkstra():
+    g, info = build_from_file()
+    src, des = info
+    src_paths = {src:[0,[]], }
+    des_paths = {vert.getName():[-1,[]] for vert in g.vertList.values() 
+                if vert.getName() != src }
+    shortest = 0
+    curr_id = src
+    while des_paths:
+        curr_vert = g.getVertex(curr_id)
+        if not curr_vert:
+            continue
+
+        # update des_paths
+        dists = {vid:dist+shortest for vid, dist in 
+                    curr_vert.connectedTo.items() if vid not in src_paths}
+        for vid,dist in dists.items():
+            if des_paths[vid][0] == -1:
+                des_paths[vid][0] = dist
+            elif des_paths[vid][0] > dist:
+                des_paths[vid][0] = dist
+                des_paths[vid][1].append(curr_id)
+
+        # out  shortest vertex
+        dists = [d[0] for d in des_paths.values() if d[0] != -1]
+        if dists:
+            shortest = min(dists)
+            for k,v in des_paths.items():
+                if v[0] == shortest:
+                    v[1].append(k)
+                    src_paths[k] = [v[0],v[1]]
+                    curr_id = k
+                    del des_paths[k]
+                    break
+        # add path
+        for vid,dist in des_paths.items():
+            if dist[0] == -1:
+                dist[1].append(curr_id)
+
+        print('src_paths',src_paths)
+    print(src,end=' ')
+    for p in src_paths[des][-1]:
+        print(p, end=' ')
+
+
+def dijkstra_2():
+    g, info = build_from_file()
+    src, des = info
+    src_paths = {src:[0,[]], }
+    des_paths = {vert.getName():[-1,[]] for vert in g.vertList.values() 
+                if vert.getName() != src }
+    shortest = 0
+    curr_id = src
+    while des_paths:
+        curr_vert = g.getVertex(curr_id)
+        if not curr_vert:
+            continue
+        # update des_paths
+        dists = {vid:dist+shortest for vid, dist in 
+                    curr_vert.connectedTo.items() if vid not in src_paths}
+        for vid,dist in dists.items():
+            if des_paths[vid][0] == -1:
+                des_paths[vid][0] = dist
+            elif des_paths[vid][0] > dist:
+                des_paths[vid][0] = dist
+                des_paths[vid][1].append(curr_id)
+
+        # out shortest vertex
+        dists = [d[0] for d in des_paths.values() if d[0] != -1]
+        if dists:
+            shortest = min(dists)
+            for k,v in des_paths.items():
+                if v[0] == shortest:
+                    v[1].append(k)
+                    src_paths[k] = [v[0],v[1]]
+                    curr_id = k
+                    del des_paths[k]
+                    break
+        if curr_id == des:
+            break
+        # add path
+        for vid,dist in des_paths.items():
+            if dist[0] == -1:
+                dist[1].append(curr_id)
+
+        print('src_paths',src_paths)
+    print(src,end=' ')
+    for p in src_paths[des][-1]:
+        print(p, end=' ')
+
+def tool(g, shortest, curr_id, src_paths, des_paths):
+    curr_vert = g.getVertex(curr_id)
+    if not curr_vert:
+        continue
+    # update des_paths
+    dists = {vid:dist+shortest for vid, dist in 
+                curr_vert.connectedTo.items() if vid not in src_paths}
+    for vid,dist in dists.items():
+        if des_paths[vid][0] == -1:
+            des_paths[vid][0] = dist
+        elif des_paths[vid][0] > dist:
+            des_paths[vid][0] = dist
+            des_paths[vid][1].append(curr_id)
+
+    # out shortest vertex
+    dists = [d[0] for d in des_paths.values() if d[0] != -1]
+    if dists:
+        shortest = min(dists)
+        for k,v in des_paths.items():
+            if v[0] == shortest:
+                v[1].append(k)
+                src_paths[k] = [v[0],v[1]]
+                curr_id = k
+                del des_paths[k]
+                break
+    # if curr_id == des:
+    #     break
+
+    # add path
+    for vid,dist in des_paths.items():
+        if dist[0] == -1:
+            dist[1].append(curr_id)
+
+    return shortest, curr_id
+
+def dijkstra_3():
+    g, info = build_from_file()
+    src, des = info
+    src_paths_before = {src:[0,[]], }
+    des_paths_before = {vert.getName():[-1,[]] for vert in g.vertList.values() 
+                if vert.getName() != src }
+    shortest_before = 0
+    curr_id_before = src
+
+    src_paths_after = {des:[0,[]], }
+    des_paths_after = {vert.getName():[-1,[]] for vert in g.vertList.values() 
+                if vert.getName() != des }
+    shortest_after = 0
+    curr_id_after = des
+
+    while not (set(src_paths_before.keys()) & set(src_paths_after)):
+        shortest_before, curr_id_before = tool(g, shortest_before, 
+            curr_id_before, src_paths_before, des_paths_before)
+
+        shortest_after, curr_id_after = tool(g, shortest_after, 
+            curr_id_after, src_paths_after, des_paths_after)
+
+    #     print('src_paths',src_paths)
+    # print(src,end=' ')
+    # for p in src_paths[des][-1]:
+    #     print(p, end=' ')
+
+
+
+if __name__ == '__main__':
+
+    print('initial...')
+    dijkstra()
+    print('idea 1')
+    dijkstra_2()
