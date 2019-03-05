@@ -2,7 +2,6 @@ import random
 from base import *
 
 
-
 def dijkstra(g, info):
     src, des = info
     src_paths = {src:[0,[]], }
@@ -198,14 +197,15 @@ def main():
     random.seed(2)
     for i in range(3):
         infos.append((random.randint(0,vert_num-1), random.randint(0,vert_num-1)))
+    print(infos)
     for info in infos:
-        print('initial...')
-        dijkstra(g, info)
-        print('idea 1')
-        dijkstra_2(g, info)
+        # print('initial...')
+        # dijkstra(g, info)
+        # print('idea 1')
+        # dijkstra_2(g, info)
         print('idea 2')
         dijkstra_3(g, info)
 
 if __name__ == '__main__':
 
-    simple_test()
+    main()
