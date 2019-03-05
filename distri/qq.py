@@ -1,7 +1,9 @@
+import random
 from base import *
 
-def dijkstra():
-    g, info = build_from_file()
+
+
+def dijkstra(g, info):
     src, des = info
     src_paths = {src:[0,[]], }
     des_paths = {vert.getName():[-1,[]] for vert in g.vertList.values() 
@@ -39,14 +41,13 @@ def dijkstra():
             if dist[0] == -1:
                 dist[1].append(curr_id)
 
-        print('src_paths',src_paths)
+        # print('src_paths',src_paths)
     print(src,end=' ')
     for p in src_paths[des][-1]:
         print(p, end=' ')
 
 
-def dijkstra_2():
-    g, info = build_from_file()
+def dijkstra_2(g, info):
     src, des = info
     src_paths = {src:[0,[]], }
     des_paths = {vert.getName():[-1,[]] for vert in g.vertList.values() 
@@ -85,7 +86,7 @@ def dijkstra_2():
             if dist[0] == -1:
                 dist[1].append(curr_id)
 
-        print('src_paths',src_paths)
+        # print('src_paths',src_paths)
     print(src,end=' ')
     for p in src_paths[des][-1]:
         print(p, end=' ')
@@ -140,8 +141,7 @@ def get_min_path(flag, src_paths, des_paths):
     return min_mid, min_dist
 
 
-def dijkstra_3():
-    g, info = build_from_file()
+def dijkstra_3(g, info):
     src, des = info
     src_paths_before = {src:[0,[]], }
     des_paths_before = {vert.getName():[-1,[]] for vert in g.vertList.values() 
@@ -183,13 +183,29 @@ def dijkstra_3():
         print(vert, end='')
     print(des, end='')
 
+def simple_test():
+    g, info = build_from_file_test()
+    print('initial...')
+    dijkstra(g, info)
+    print('idea 1')
+    dijkstra_2(g, info)
+    print('idea 2')
+    dijkstra_3(g, info)
 
+def main():
+    g, vert_num = build_from_file()
+    infos = []
+    random.seed(2)
+    for i in range(3):
+        infos.append((random.randint(0,vert_num-1), random.randint(0,vert_num-1)))
+    for info in infos:
+        print('initial...')
+        dijkstra(g, info)
+        print('idea 1')
+        dijkstra_2(g, info)
+        print('idea 2')
+        dijkstra_3(g, info)
 
 if __name__ == '__main__':
 
-    # print('initial...')
-    # dijkstra()
-    # print('idea 1')
-    # dijkstra_2()
-    # print('idea 2')
-    dijkstra_3()
+    simple_test()

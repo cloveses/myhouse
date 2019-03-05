@@ -52,7 +52,7 @@ class Graph:
         return iter(self.vertList.values())
 
 
-def build_from_file(filevert_id='input.txt'):
+def build_from_file_test(filevert_id='input.txt'):
     g = Graph()
     points = {}
     edge_datas = []
@@ -78,10 +78,35 @@ def build_from_file(filevert_id='input.txt'):
                         points[overt][0], points[overt][1]))
     return g, info
 
+def build_from_file(filevert_id='usa.txt'):
+    g = Graph()
+    points = {}
+    edge_datas = []
+
+    with open(filevert_id,'r') as f:
+        vertices,edges = [int(d) for d in f.readline().strip().split(' ')]
+        for i in range(vertices):
+            line = f.readline().strip().split(' ')
+            line = [d for d in line if d.strip()]
+            points[int(line[0])] = (int(line[1]), int(line[-1]))
+        f.readline()
+
+        for i in range(edges):
+            line = f.readline().strip().split(' ')
+            edge_datas.append((int(line[0]), int(line[-1])))
+
+    dist = lambda x,y,m,n:math.sqrt((x - m) ** 2 + (y - n) ** 2)
+    for vert_id in points.keys():
+        g.addVertex(vert_id)
+    for vert,overt in edge_datas:
+        g.addEdge(vert, overt, dist(points[vert][0], points[vert][1],
+                        points[overt][0], points[overt][1]))
+    return g, vertices
+
 
 if __name__ == '__main__':
     
-    g, info = build_from_file()
+    g, info = build_from_file_test()
 
     for v in g:
         print(v)
