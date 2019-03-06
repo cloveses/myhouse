@@ -76,52 +76,99 @@ def dijstra(g, src, des):
     print(src_paths[des])
     print()
 
+def tools(g, current_vert, shortest, cur_paths, src_paths, des_paths):
 
+    cur_paths.append(current_vert)
+    # update des_paths distances
+    dists = {v:d + shortest for v,d in g[current_vert] if v not in src_paths}
+    for v, d in dists.items():
+        if v not in des_paths:
+            des_paths[v] = [d,cur_paths[:]]
+        elif des_paths[v][0] > d:
+            if current_vert not in cur_paths:
+                cur_paths.append(current_vert)
+            des_paths[v][0] = d
+            des_paths[v][1].append(cur_paths[:])
+
+    # out shortest vertex
+    dists = (d[0] for d in des_paths.values())
+    if dists:
+        shortest = min(dists)
+        for v,data in des_paths.items():
+            if data[0] == shortest:
+                current_vert = v
+                src_paths[v] = des_paths[v]
+                del des_paths[v]
+                break
+
+    return current_vert, shortest
+
+def get_min_path(src_paths, des_paths):
+    flag = set(src_paths.keys()) & set(des_paths.keys())
+    min_dist = -1
+    min_mid = None
+    for mid in flag:
+        dist = src_paths[mid][0] + des_paths[mid][0]
+        if min_dist != -1:
+            if dist < min_dist:
+                min_dist = dist
+                min_mid = mid
+        else:
+            min_dist = dist
+            min_mid = mid
+    return min_mid, min_dist
 
 def dijstra2(g, src, des):
 
-    current_vert = src
-    des_paths = {}
-    src_paths = {src:[0,[src,]], }
-    shortest = 0
-    cur_paths = []
+    current_vert_before = src
+    des_paths_before = {}
+    src_paths_before = {src:[0,[src,]], }
+    shortest_before = 0
+    cur_paths_before = []
+
+    current_vert_after = des
+    des_paths_after = {}
+    src_paths_after = {des:[des,[src,]], }
+    shortest_after = 0
+    cur_paths_after = []
 
     while True:
-        cur_paths.append(current_vert)
-        # update des_paths distances
-        dists = {v:d + shortest for v,d in g[current_vert] if v not in src_paths}
-        for v, d in dists.items():
-            if v not in des_paths:
-                des_paths[v] = [d,cur_paths[:]]
-            elif des_paths[v][0] > d:
-                if current_vert not in cur_paths:
-                    cur_paths.append(current_vert)
-                des_paths[v][0] = d
-                des_paths[v][1].append(cur_paths[:])
+        current_vert_before, shortest_before = tools(g, 
+            current_vert_before, shortest_before,
+            cur_paths_before, src_paths_before, des_paths_before)
 
-        # out shortest vertex
-        dists = (d[0] for d in des_paths.values())
-        if dists:
-            shortest = min(dists)
-            for v,data in des_paths.items():
-                if data[0] == shortest:
-                    current_vert = v
-                    src_paths[v] = des_paths[v]
-                    del des_paths[v]
-                    break
+        current_vert_after, shortest_after = tools(g, 
+            current_vert_after, shortest_after,
+            cur_paths_after, src_paths_after, des_paths_after)
 
-        # print(current_vert, end=',')
-        # print()
-        if current_vert == des:
+        if set(src_paths_before.keys()) & set(src_paths_after.keys()):
             break
-        if not des_paths:
-            break
+
+    print(src_paths_before)
     print()
-    print(src_paths[des])
-    print()
+    print(src_paths_after)
+    mid,dist = get_min_path(src_paths_before, src_paths_after)
+    print(mid)
+    paths = src_paths_before[mid][1][:]
+    paths.append(mid)
+    paths.extend(src_paths_after[mid][1][::-1])
+    print(dist)
+    print(paths)
 
 if __name__ == '__main__':
-    # g = build_from_file('inputk.txt')
-    # dijstra(g, 0, 5)
-    g = build_from_file()
-    dijstra(g, 896, 881)
+    g = build_from_file('inputk.txt')
+
+    dijstra(g, 3, 4)
+
+    dijstra2(g, 3 , 4)
+
+    # g = build_from_file()
+
+    # dijstra(g, 896, 881)
+    # dijstra2(g, 896, 881)
+
+    # dijstra(g, 89, 139)
+    # dijstra2(g, 89, 139)
+
+    # dijstra(g, 23152, 23115)
+    # dijstra2(g, 23152, 23115)

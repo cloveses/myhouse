@@ -163,7 +163,7 @@ def dijkstra_3(g, info):
         shortest_after, curr_id_after = tool(g, shortest_after, 
             curr_id_after, src_paths_after, des_paths_after)
 
-        flag = set(src_paths_before.keys()) & set(src_paths_after)
+        flag = set(src_paths_before.keys()) & set(src_paths_after.keys())
 
     #     print('src_paths',src_paths)
     # print(src,end=' ')
