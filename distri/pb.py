@@ -56,7 +56,8 @@ def dijstra(g, src, des):
                 if current_vert not in cur_paths:
                     cur_paths.append(current_vert)
                 des_paths[v][0] = d
-                des_paths[v][1].append(cur_paths[:])
+                # des_paths[v][1].append(cur_paths[:])
+                des_paths[v][1].append(current_vert)
 
         # out shortest vertex
         dists = (d[0] for d in des_paths.values())
@@ -69,6 +70,9 @@ def dijstra(g, src, des):
                     cur_paths = src_paths[v][1][:]
                     del des_paths[v]
                     break
+        # print(src_paths)
+        # print(des_paths)
+        # print()
 
         # print(current_vert, end=',')
         # print()
