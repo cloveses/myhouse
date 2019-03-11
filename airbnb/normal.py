@@ -23,11 +23,13 @@ def main():
     br.find_element_by_xpath("//input[@id='login_pwd']").send_keys('zhangjie' + pw)
     time.sleep(1)
     br.find_element_by_xpath("//input[@type='submit']").click()
-    time.sleep(3)
+    time.sleep(43)
+    input('Continue ...')
     element = br.find_element_by_xpath("//ul[@class='cf']//li[4]//a")
     ActionChains(br).move_to_element(element)
     time.sleep(3)
     br.find_element_by_xpath("//ul[@class='cf']//li[4]//a").click()
+    input('Continue ...')
     time.sleep(5)
     all_handles=br.window_handles
     br.switch_to_window(all_handles[-1])
@@ -43,7 +45,7 @@ def main():
     while True:
         pan_status = br.find_element_by_xpath("//div[@id='pan_status']").get_attribute('class')
         if pan_status != 'open':
-            time.sleep(120)
+            time.sleep(60)
         else:
             break
 
@@ -60,28 +62,44 @@ def main():
         br.find_element_by_xpath("//a[@id='btn_order_confirm']").click()
         #确认
         br.find_element_by_xpath("//a[@id='order_ok']").click()
-        # #投注等待封盘
-        # while True:
-        #     pan_status = br.find_element_by_xpath("//div[@id='pan_status']").get_attribute('class')
-        #     if pan_status != 'close':
-        #         time.sleep(180)
-        #     else:
-        #         break
+
+        # 投注完成后等待余额减少并更新当前剩现金数
+        time.sleep(30)
+        while True:
+            cash_new = float(br.find_element_by_xpath("//div[@id='money_cash']/span").text )
+            if abs(cash - cash_new) > 0.0000000000001:
+                cash = cash_new
+                break
+            else:
+                time.sleep(60)
+        log('remain:' + str(cash))
+        print('remain:', cash)
+
         # 等待开盘
-        time.sleep(600)
         while True:
             pan_status = br.find_element_by_xpath("//div[@id='pan_status']").get_attribute('class')
             if pan_status != 'open':
-                time.sleep(180)
+                time.sleep(120)
             else:
                 break
+
+        # 等待开奖后获取当前剩现金数
+        time.sleep(30)
+        while True:
+            cash_new = float(br.find_element_by_xpath("//div[@id='money_cash']/span").text )
+            if abs(cash - cash_new) > 0.0000000000001:
+                break
+            else:
+                time.sleep(120)
+
         # 更新投注状态
-        cash_new = float(br.find_element_by_xpath("//div[@id='money_cash']/span").text )
         if cash_new > cash:
             order_status = (order_status + 1) % 3
         else:
             order_status = 0
         cash = cash_new
+        print('remain:', cash)
+        log('remain:' + str(cash))
 
 if __name__ == '__main__':
     main()
