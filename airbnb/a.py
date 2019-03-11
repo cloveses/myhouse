@@ -2,7 +2,7 @@ from selenium import webdriver
 
 br = webdriver.Firefox()
 
-br.get('http://www.62665511.com/')
+br.get('https://f6.com/')
 all_handles=br.window_handles
 br.switch_to_window(all_handles[-1])
 #选择重庆时时彩
