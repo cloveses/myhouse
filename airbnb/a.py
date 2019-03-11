@@ -7,9 +7,9 @@ br.get('https://f6.com/')
 br.find_element_by_xpath("//div[contains(@class,'logbtn')]/a").click()
 
 
-br.find_element_by_xpath("//input[@id='login_username']").send_keys('baga0556')
+br.find_element_by_xpath("//input[@id='login_username']").send_keys('baga')
 
-br.find_element_by_xpath("//input[@id='login_pwd']").send_keys('zhangjie0556')
+br.find_element_by_xpath("//input[@id='login_pwd']").send_keys('zhangjie')
 
 br.find_element_by_xpath("//input[@type='submit']").click()
 
