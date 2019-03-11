@@ -37,6 +37,7 @@ def main():
     br.find_element_by_xpath("//a[@id='countdown_lt_1']").click()
     time.sleep(2)
     cash = float(br.find_element_by_xpath("//div[@id='money_cash']/span").text )#金额数
+    print('init:', cash)
     order_status = 0
     # order_cash = {0:'10', 1:'19.7', 2:'38.8'}
     order_cash = {0:'1', 1:'1.97', 2:'3.88'}
