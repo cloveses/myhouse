@@ -39,23 +39,24 @@ def main():
     cash = float(br.find_element_by_xpath("//div[@id='money_cash']/span").text )#金额数
     print('init:', cash)
     order_status = 0
-    # order_cash = {0:'10', 1:'19.7', 2:'38.8'}
-    order_cash = {0:'1', 1:'1.97', 2:'3.88'}
+    # order_cashes = {0:'10', 1:'19.7', 2:'38.8'}
+    order_cashes = {0:'1', 1:'2', 2:'3'}
 
-    # 等待开盘
-    while True:
-        pan_status = br.find_element_by_xpath("//div[@id='pan_status']").get_attribute('class')
-        if pan_status != 'open':
-            time.sleep(60)
-        else:
-            break
 
     while True:
+        # 等待开盘
+        while True:
+            pan_status = br.find_element_by_xpath("//div[@id='pan_status']").get_attribute('class')
+            if pan_status != 'open':
+                time.sleep(60)
+            else:
+                break
+
         if cash == 0:
             break
-        if cash >= float(order_cash[order_status]):
-            br.find_element_by_xpath("//input[@data-id='p5_dan']").send_keys(order_cash[order_status])
-            log(order_cash[order_status])
+        if cash >= float(order_cashes[order_status]):
+            br.find_element_by_xpath("//input[@data-id='p5_dan']").send_keys(order_cashes[order_status])
+            log(order_cashes[order_status])
         else:
             br.find_element_by_xpath("//input[@data-id='p5_dan']").send_keys(str(cash))
             log(str(cash))
@@ -76,25 +77,34 @@ def main():
         log('remain:' + str(cash))
         print('remain:', cash)
 
-        # 等待开盘
+        # 等待封盘
         while True:
             pan_status = br.find_element_by_xpath("//div[@id='pan_status']").get_attribute('class')
-            if pan_status != 'open':
+            if pan_status != 'close':
                 time.sleep(120)
             else:
                 break
 
-        # 等待开奖后获取当前剩现金数
+        # 等待开奖 获取当前剩现金数
         time.sleep(30)
         while True:
-            cash_new = float(br.find_element_by_xpath("//div[@id='money_cash']/span").text )
-            if abs(cash - cash_new) > 0.0000000000001:
+            order_cash = int(br.find_element_by_xpath("//div[@id='curr_phase_sum']/span").text )
+            if order_cash == 0:
                 break
             else:
-                time.sleep(120)
+                time.sleep(60)
+
+        time.sleep(30)
+        while True:
+            result = br.find_element_by_xpath("//div[@id='phase_result_phase']").text
+            if result.endswith('开奖结果'):
+                cash_new = float(br.find_element_by_xpath("//div[@id='money_cash']/span").text )
+                break
+            else:
+                time.sleep(240)
 
         # 更新投注状态
-        if cash_new > cash:
+        if abs(cash_new - cash) > 0.00000000001:
             order_status = (order_status + 1) % 3
         else:
             order_status = 0
