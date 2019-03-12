@@ -28,9 +28,14 @@
 </head>
 <body>
     <div id="main">
+      {% if pid == 0 %}
         <button class="pure-button pure-button-primary" id="start">开启</button>
         <button class="button-error pure-button" id="end" disabled="disabled">关闭</button>
-        <input type="hidden" id="pid" name="pid" value="0" />
+      {% else %}
+        <button class="pure-button pure-button-primary" id="start" disabled="disabled">开启</button>
+        <button class="button-error pure-button" id="end">关闭</button>
+      {% endif %}
+        <input type="hidden" id="pid" name="pid" value="{{pid}}" />
     </div>
     <script type="text/javascript">
         $(function(){
