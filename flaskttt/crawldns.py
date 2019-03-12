@@ -44,7 +44,7 @@ class calThread(threading.Thread):
 
             title = ""
 
-            print(per)
+            # print(per)
 
             per = per.strip('\n')  # 去除换行符
 
@@ -88,7 +88,7 @@ class calThread(threading.Thread):
 
             row = {"domainName": per, "title": title}  # 一条数据
 
-            print(row)
+            # print(row)
 
             self.resultFile[per] = row  # 放入字典里
 
@@ -103,7 +103,7 @@ if __name__ == "__main__":
 
     # result = pd.DataFrame(columns=['domainName','title'])
 
-    file = open("list3.txt")  # 读取文件
+    file = open("/data/runtask/list3.txt")  # 读取文件
 
     data = []
 
