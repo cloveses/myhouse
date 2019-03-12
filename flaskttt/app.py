@@ -44,7 +44,7 @@ def index():
 @app.route('/start')
 def start():
     try:
-        p = subprocess.Popen(['python3', '/home/djx/mytest/sub.py'])
+        p = subprocess.Popen(['python3', '/data/flaskttt/sub.py'])
         print(p.pid)
         save_pid(p.pid)
         pass
