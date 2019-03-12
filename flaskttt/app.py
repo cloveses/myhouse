@@ -26,10 +26,20 @@ def get_pid(clear=True):
         save_pid('\n')
     return pid
 
-@app.route('/')
+@app.route('/', methods=["GET","POST"])
 def index():
-    pid = get_pid(clear=False)
-    return render_template('index.html', pid=pid)
+    info = ''
+    if request.method == "GET":
+        return render_template('login.html', info=info)
+    else:
+        name = request.form.get('name', '')
+        password = request.form.get('password', '')
+        if name and password and name='lenovo' and password='lenovolen':
+            pid = get_pid(clear=False)
+            return render_template('index.html', pid=pid)
+        else:
+            info = 'LOG ERROR!'
+            return render_template('login.html',info=info)
 
 @app.route('/start')
 def start():

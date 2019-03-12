@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>login</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='pure-min.css')}}" />
+    <style type="text/css">
+        #main {
+            margin:0 auto;
+            width: 9em;
+            height: 4em;
+            padding-top: 2em;
+        }
+        h4 {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div id="main">
+        {% if info:%}
+        <h4>{{info}}</h4>
+        {%endif%}
+        <form method="post" class="pure-form pure-form-aligned">
+            <fieldset>
+                <div class="pure-control-group">
+                    <label for="name">Username</label>
+                    <input id="name" name="name" type="text"  placeholder="用户名">
+                </div>
+                <div class="pure-control-group">
+                    <label for="pw">Username</label>
+                    <input id="pw" name="password" type="password" placeholder="密码">
+                </div>
+                <div class="pure-control-group">
+                    <label for="subt">Username</label>
+                    <!-- <input id="subt" type="submit" class="pure-button"> -->
+                    <button type="submit" class="pure-button pure-button-primary">Submit</button>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</body>
+</html>
