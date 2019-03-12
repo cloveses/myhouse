@@ -34,7 +34,7 @@ def index():
     else:
         name = request.form.get('name', '')
         password = request.form.get('password', '')
-        if name and password and name='lenovo' and password='lenovolen':
+        if name and password and name == 'lenovo' and password == 'lenovolen':
             pid = get_pid(clear=False)
             return render_template('index.html', pid=pid)
         else:
