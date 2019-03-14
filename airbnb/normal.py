@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver import ActionChains
 import time
 import datetime
+import sys
 
 def log(info, name='log.txt'):
     with open(name, 'a', encoding='utf-8') as f:
@@ -10,7 +11,7 @@ def log(info, name='log.txt'):
         f.write(info)
         f.write('\n')
 
-def main():
+def main(times=3):
     br = webdriver.Firefox()
 
     br.get('https://f6.com/')
@@ -40,7 +41,7 @@ def main():
     print('init:', cash)
     order_status = 0
     # order_cashes = {0:'10', 1:'19.7', 2:'38.8'}
-    order_cashes = {0:'1', 1:'2', 2:'4'}
+    order_cashes = {0:'1', 1:'2', 2:'4', 3:'8', 4:'15', 5:'30'}
 
 
     while True:
@@ -111,7 +112,7 @@ def main():
 
         # 更新投注状态
         if abs(cash_new - cash) > 0.00000000001:
-            order_status = (order_status + 1) % 3
+            order_status = (order_status + 1) % times
         else:
             order_status = 0
         cash = cash_new
@@ -119,7 +120,10 @@ def main():
         log('remain:' + str(cash))
 
 if __name__ == '__main__':
-    main()
+    params = sys.argv
+    if len(params) > 1:
+        times = int(params[1])
+        main(times)
+    else:
+        main()
 
-    # div id=phase_result_phase 第 20190311053 期 开奖结果
-    # phase_result_balls ul li 
