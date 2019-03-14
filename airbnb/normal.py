@@ -12,6 +12,8 @@ def log(info, name='log.txt'):
         f.write('\n')
 
 def main(times=3):
+    history_datas = []
+
     br = webdriver.Firefox()
 
     br.get('https://f6.com/')
@@ -38,11 +40,20 @@ def main(times=3):
     br.find_element_by_xpath("//a[@id='countdown_lt_1']").click()
     time.sleep(2)
     cash = float(br.find_element_by_xpath("//div[@id='money_cash']/span").text )#金额数
+
+    for i in range(50):
+        d = br.find_element_by_xpath("//table[@id='result_table_right']//td[{}]".format(i+1)).text
+        if int(d) % 2 == 1:
+            history_datas.append(1)
+        else:
+            history_datas.append(0)
+
     print('init:', cash)
     order_status = 0
     # order_cashes = {0:'10', 1:'19.7', 2:'38.8'}
-    order_cashes = {0:'1', 1:'2', 2:'4', 3:'8', 4:'15', 5:'30'}
-
+    order_cashes = {0:'1', 1:'2', 2:'4', 3:'8', 4:'15', 5:'30', 6:'59'}
+    phase_directs = ["//input[@data-id='p1_dan']", "//input[@data-id='p1_shuang']"]
+    phase_direct = 0
 
     while True:
         # 等待开盘
@@ -55,11 +66,29 @@ def main(times=3):
 
         if cash == 0:
             break
+
+        ratio = (len([i for i in history_datas if i==1]) / len(history_datas)) * 100
+        print('ratio:', ratio, 'phase_direct:', phase_direct)
+
+        if ratio - 56 > 0.0000000001:
+            phase_direct = 1
+        else:
+            phase_direct = 0
+
+        if ratio - 60 > 0.0000000001:
+            times = 4
+        elif ratio - 65 > 0.0000000001:
+            times = 6
+        else:
+            times = 3
+
+        print('times:', times)
+
         if cash >= float(order_cashes[order_status]):
-            br.find_element_by_xpath("//input[@data-id='p5_dan']").send_keys(order_cashes[order_status])
+            br.find_element_by_xpath(phase_directs[phase_direct]).send_keys(order_cashes[order_status])
             log(order_cashes[order_status])
         else:
-            br.find_element_by_xpath("//input[@data-id='p5_dan']").send_keys(str(cash))
+            br.find_element_by_xpath(phase_directs[phase_direct]).send_keys(str(cash))
             log(str(cash))
 
         #确认
@@ -113,8 +142,23 @@ def main(times=3):
         # 更新投注状态
         if abs(cash_new - cash) > 0.00000000001:
             order_status = (order_status + 1) % times
+            if phase_direct == 0:
+                history_datas.append(1)
+            else:
+                history_datas.append(0)
         else:
             order_status = 0
+            if phase_direct == 1:
+                history_datas[0] += 1
+
+            if phase_direct == 0:
+                history_datas.append(0)
+            else:
+                history_datas.append(1)
+
+        if len(history_datas) > 100:
+            history_datas = history_datas[-100:]
+
         cash = cash_new
         print('remain:', cash)
         log('remain:' + str(cash))
