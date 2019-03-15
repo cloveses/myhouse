@@ -41,7 +41,7 @@ def main(times=3):
     print('init:', cash)
     order_status = 0
     # order_cashes = {0:'10', 1:'19.7', 2:'38.8'}
-    order_cashes = {0:'1', 1:'2', 2:'4', 3:'8', 4:'15', 5:'30'}
+    order_cashes = {0:'1', 1:'2', 2:'4', 3:'8', 4:'15', 5:'30', 6:'59'}
 
 
     while True:
