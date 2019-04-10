@@ -1,4 +1,5 @@
 import nltk
+import re
 
 with open('text.txt','r') as src_file:
     texts = src_file.readlines()
@@ -21,20 +22,28 @@ top_words = res.most_common(30)
 for w,f in top_words:
     print(w,f)
 
-texts = [
-'Celebrate #NationalPetDay with our puppy playlist: https://t.co/eBHHFPW0z7 https://t.co/uix5AY2FFQ',
-"""<a href="http://msande.stanford.edu"> Management Science and Engineering </a>
-<p class="MsoNormal">
-      Address: Terman 311, Stanford CA 94305<br>
-      Email: ashishg@cs.stanford.edu<br>
-      Phone: (650)814-9999 [Cell], Fax: (650)723-9999<br>
-      Admin asst: Roz Morf, Terman 405, 650-723-9999, rozm@stanford.edu</p>
-""",
-"""The U.S.A. olympic teams have east-west training centers with up-to-date equipment."""
-]
 
-re_url = r''
-re_phone = r'\d{3}-\d{8}|\d{4}-\d{7}'
-re_email = r'^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$'
-re_hyphen = ''
-re_acronyms = ''
+# question 2
+
+texts = """Celebrate #NationalPetDay with our puppy playlist: https://t.co/eBHHFPW0z7 https://t.co/uix5AY2FFQ 
+    <a href="http://msande.stanford.edu"> Management Science and Engineering </a>
+    <p class="MsoNormal">
+          Address: Terman 311, Stanford CA 94305<br>
+          Email: ashishg@cs.stanford.edu<br>
+          Phone: (650)814-9999 [Cell], Fax: (650)723-9999<br>
+          Admin asst: Roz Morf, Terman 405, 650-723-9999, rozm@stanford.edu</p>
+
+    The U.S.A. olympic teams have east-west training centers with up-to-date equipment."""
+
+
+re_url = r'[a-zA-Z]+://[^\s]*\b'
+re_phone = r'\(?\d{3}\)?-?\d{3}-\d{4}'
+re_email = r'\b\w+@[\w+\.]+\w+\b'
+re_hyphen = r'\b\w+[-?\w+]*\b'
+re_acronyms = r'\b[A-Z][\.?A-Z]+\b'
+
+print(re.findall(re_url, texts))
+print(re.findall(re_phone, texts))
+print(re.findall(re_email, texts))
+print(re.findall(re_hyphen, texts))
+print(re.findall(re_acronyms, texts))
