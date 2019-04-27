@@ -31,6 +31,9 @@ def get_datas():
         print(e)
 
 def display_all(headers, datas):
+    if not datas:
+        print('No datas!')
+        return
     max_page = math.ceil(len(datas) / 10)
     page = 0
     page_num = 10
@@ -38,9 +41,8 @@ def display_all(headers, datas):
         for header in headers:
             print(header, end='\t')
         print()
-        for i in range(page * 10 , (page + 1) * 10):
+        for row in datas[page * 10 : (page + 1) * 10]:
             for k in headers:
-                row = datas[i]
                 print(row[k], end='\t')
             print()
         command = input('Continue(Enter) or Quit(Q)?')
@@ -99,19 +101,55 @@ def query_from_some_field(headers, datas):
                 print(data[header], end='\t')
             print()
 
+def display_grad_year(headers, datas):
+    while True:
+        grad_year = input('Please input a students\'s GradYear:').strip()
+        if grad_year and grad_year.isdigit():
+            # grad_year = int(grad_year)
+            break
+    datas = [d for d in datas if d['GradYear'] == grad_year]
+    # print(datas)
+    display_all(headers, datas)
+
+def count_one_year(headers, datas, grad_year):
+    ret = {}
+    for data in datas:
+        if data['GradYear'] == grad_year:
+            if data['DegreeProgram'] in ret:
+                ret[data['DegreeProgram']] += 1
+            else:
+                ret[data['DegreeProgram']] = 1
+    # print(ret)
+    if ret:
+        totals = sum(ret.values())
+        for k,v in ret.items():
+            print(k, ':', v, 'Percent:', v / totals * 100)
+    else:
+        print('No datas!')
+
 def count_from_grad_year(headers, datas):
     while True:
         grad_year = input('Please input a students\'s GradYear:').strip()
         if grad_year and grad_year.isdigit():
-            grad_year = int(grad_year)
+            # grad_year = int(grad_year)
             break
-    sum = 0
-    for data in datas:
-        if int(data['GradYear']) <= grad_year:
-            sum += 1
-    print('Graduating on/after', grad_year, ':', sum)
-    percent = sum / len(datas) * 100
-    print('Graduating on/after Percent:', percent, '%')
+    while True:
+        on_after = input('Please Select On or After(On or Aft)? :').strip().lower()
+        if on_after and on_after in ('on', 'aft'):
+            break
+    if on_after == 'on':
+        count_one_year(headers, datas, grad_year)
+    elif on_after == 'aft':
+        max_year = 0
+        for data in datas:
+            if int(data['GradYear']) > max_year:
+                max_year = int(data['GradYear'])
+        if max_year < int(grad_year):
+            print('No datas')
+        else:
+            for year in range(int(grad_year), max_year):
+                count_one_year(headers, datas, grad_year)
+
 
 def main():
     print('init from file ...')
@@ -121,14 +159,16 @@ def main():
             break
     headers, studs = datas
     commands = {'list':display_all,'qid':query_from_id,
-            'qlst':query_from_lastname, 'qfd':query_from_some_field, 'qcgy': count_from_grad_year}
+            'qlst':query_from_lastname, 'qfd':query_from_some_field,
+            'qcgy': count_from_grad_year, 'dgy':display_grad_year}
     while True:
         print()
         print('-------------------------------')
         print('List all:(list); Query ID:(Qid); Query Last(Qlst); Query field(Qfd);\
-            Count GradYear(Qcgy); Quit(Q)')
+            Count GradYear(Qcgy); display_grad_year(Dgy); Quit(Q)')
         print('-------------------------------')
         command = input('Input your command:').lower()
+        print()
         if command == 'q':
             break
         if not command or command not in commands.keys():
