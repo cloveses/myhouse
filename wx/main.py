@@ -12,7 +12,35 @@ import os
 from time import sleep
 import itchat
 from itchat.content import *
+import xlrd
 
+def get_data(filename='告警对照表.xlsx', start=1):
+     #既可以打开xls类型的文件，也可以打开xlsx类型的文件
+    datas = []
+    w = xlrd.open_workbook(filename)
+    ws = w.sheets()[0]
+    nrows = ws.nrows
+    for i in range(start, nrows):
+        data = ws.row_values(i)
+        datas.append(data)
+    #    print(datas)
+    datas = {r[0]:r[1] for r in datas}
+    return datas
+
+warnnings = get_data()
+
+def get_warnnings(infos, flag='Nr of active alarms are:'):
+    all_warnnings = []
+    if flag in infos:
+        infos = infos.split('\n')[::-1][1:]
+        for info in infos:
+            if '=======' in info:
+                break
+            for k,v in warnnings.items():
+                if k in info:
+                    all_warnnings.append(v)
+    if all_warnnings:
+        return '\n'.join(all_warnnings[::-1])
 
 
 #模拟Xshell功能
@@ -131,6 +159,9 @@ def group_reply_text(msg):
             gen_img(rets, filename)
             f.write(rets)
             f.flush()
+            w = get_warnnings(rets)
+            if w:
+                itchat.send(rets, toUserName=msg['ToUserName'])
             #itchat.send(rets, toUserName=msg['ToUserName'])
             itchat.send_image(filename, toUserName=msg['ToUserName'])
             itchat.send_image(filename, toUserName=msg['FromUserName'])
