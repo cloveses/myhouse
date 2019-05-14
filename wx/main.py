@@ -17,13 +17,18 @@ import xlrd
 def get_data(filename='告警对照表.xlsx', start=1):
      #既可以打开xls类型的文件，也可以打开xlsx类型的文件
     datas = []
+    # 打开工作簿（电子表格文件）
     w = xlrd.open_workbook(filename)
+    # 获取第一张工作表
     ws = w.sheets()[0]
+    # 获取表中总行数
     nrows = ws.nrows
+    # 循环获取每一行数据
     for i in range(start, nrows):
         data = ws.row_values(i)
         datas.append(data)
     #    print(datas)
+    # 将对照表转换为字典后返回
     datas = {r[0]:r[1] for r in datas}
     return datas
 
@@ -31,17 +36,21 @@ warnnings = get_data()
 
 def get_warnnings(infos, flag='Nr of active alarms are:'):
     all_warnnings = []
+    # LOG中出现告警信息
     if flag in infos:
+        # 告警信息按行分隔
         infos = infos.split('\n')[::-1][1:]
+        # 迭代行信息，查找对应翻译
         for info in infos:
             if '=======' in info:
                 break
+            # 迭代每个告警信息词条，找出后添加到返回列表中
             for k,v in warnnings.items():
                 if k in info:
                     all_warnnings.append(v)
+    # 如果获取到报警信息，则合并成为一个字符串并返回
     if all_warnnings:
         return '\n'.join(all_warnnings[::-1])
-
 
 #模拟Xshell功能
 class Linux(object):
@@ -147,13 +156,13 @@ def group_reply_text(msg):
         f.writelines(datas)
         f.flush()
         print(datas)
-        if content.startswith('##1##'):
+        if content.startswith('##告警##'):
             host.connect()
             #print(source)  #个人ID
             #print(username) #个人名字
             #print(group)   #群的所有信息
             #print(chatroom_id) #群的ID
-            rets = host.send('amos '+ content[5:])
+            rets = host.send('amos '+ content[6:])
             rets += host.send('run ' + Command1)
             filename = 'myimg.jpg'
             gen_img(rets, filename)
@@ -161,29 +170,36 @@ def group_reply_text(msg):
             f.flush()
             w = get_warnnings(rets)
             if w:
-                itchat.send(rets, toUserName=msg['ToUserName'])
+                itchat.send(w, toUserName=msg['ToUserName'])
             #itchat.send(rets, toUserName=msg['ToUserName'])
             itchat.send_image(filename, toUserName=msg['ToUserName'])
             itchat.send_image(filename, toUserName=msg['FromUserName'])
             #itchat.send_image(filename, toUserName=msg['ActualNickName'])
             #itchat.send_image(filename, toUserName=itchat.get_chatrooms(update=True))
-            #itchat.send_image(filename, toUserName=itchat.search_chatrooms()) #0
+            #itchat.send_image(filename, toUserName=itchat.search_chatrooms()) #0Active
 
             host.close()
-        if content.startswith('##2##'):
+        if content.startswith('##温度##'):
             host.connect()
-            rets = host.send('amos '+ content[5:])
+            rets = host.send('amos '+ content[6:])
             rets += host.send('run ' + Command2)
             filename = 'myimg.jpg'
             gen_img(rets, filename)
             f.write(rets)
             f.flush()
-            tem = rets.split('\n')[29]
-            tem = [t for t in tem.split(' ') if t]
-            itchat.send(tem[-2], toUserName=msg['ToUserName']) #0
-            itchat.send(tem[-2], toUserName=msg['FromUserName']) #0
-            itchat.send_image(filename, toUserName=msg['ToUserName'])
-            itchat.send_image(filename, toUserName=msg['FromUserName'])
+            pattern = " (\w+) *(?=Active)"
+            m = re.search(pattern, rets)
+            print(m.group(1))
+            itchat.send(content[6:] + 'DU温度是' + m.group(1), toUserName=msg['ToUserName']) #倒数第二个
+            itchat.send(content[6:] + 'DU温度是' + m.group(1), toUserName=msg['FromUserName']) #倒数第二个
+
+            #tem = rets.split('\n')[29]     #按照行来
+            #tem = [t for t in tem.split(' ') if t] #空格分隔
+            #itchat.send(tem[-2], toUserName=msg['ToUserName']) #倒数第二个
+            #itchat.send(tem[-2], toUserName=msg['FromUserName']) #倒数第二个
+
+            #itchat.send_image(filename, toUserName=msg['ToUserName'])
+            #itchat.send_image(filename, toUserName=msg['FromUserName'])
             #itchat.send_image(filename, toUserName=msg['ActualNickName'])
             #itchat.send_image(filename, toUserName=itchat.get_chatrooms(update=True)) #0
             #itchat.send_image(filename, toUserName=itchat.search_chatrooms())  #0
