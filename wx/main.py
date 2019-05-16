@@ -47,10 +47,30 @@ def get_warnnings(infos, flag='Nr of active alarms are:'):
             # 迭代每个告警信息词条，找出后添加到返回列表中
             for k,v in warnnings.items():
                 if k in info:
-                    all_warnnings.append(v)
+                    all_warnnings.append(' '.join(info.split(' ')[:2]) + ' ' + v)
+                    break
     # 如果获取到报警信息，则合并成为一个字符串并返回
     if all_warnnings:
         return '\n'.join(all_warnnings[::-1])
+
+def get_warnnings_v2(infos, flag='Nr of active alarms are:'):
+    all_warnnings = []
+    # LOG中出现告警信息
+    if flag in infos:
+        # 告警信息按行分隔
+        infos = infos.split('\n')[::-1][1:]
+        # 迭代行信息，查找对应翻译
+        for info in infos:
+            if '=======' in info:
+                break
+            # 迭代每个告警信息词条，找出后添加到返回列表中
+            if '    ' in info:
+                info = info[:info.index('    ')].split(' ')
+                all_warnnings.append(' '.join(info[3:]))
+    # 如果获取到报警信息，则合并成为一个字符串并返回
+    if all_warnnings:
+        return '\n'.join(all_warnnings[::-1])
+
 
 #模拟Xshell功能
 class Linux(object):
