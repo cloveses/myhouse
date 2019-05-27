@@ -5,10 +5,14 @@ def fac(n):
         res *= i
     return res
 
-values = {'J':11 ,'Q':12, 'K':13, 'A': 20}
-
-get_face_value = lambda i:values[i[0]] if i[0] in values else int(i[0])
 get_color = lambda i: 'B' if i[1] in 'SC' else 'R'
+
+def get_face_value(i):
+    values = {'J':11 ,'Q':12, 'K':13, 'A': 20}
+    v = values[i[0]] if i[0] in values else int(i[0])
+    if v == 0:
+        v = 10
+    return v
 
 def is_run(o_cards, a_cards):
     #保存A
@@ -52,17 +56,14 @@ def comp10001go_score_group(cards):
     if len(cards) > 1:
         a_cards = [card for card in cards if 'A' in card]
         o_cards = [card for card in cards if 'A' not in card]
-        o_cards.sort(key=lambda card:int(card[0]) if card[0] not in values else values[card[0]])
+        o_cards.sort(key=get_face_value)
         print(o_cards)
         # 以下检测N-of-a-kind
         if not a_cards:
             face_values = set([o_card[0] for o_card in o_cards])
             if len(face_values) == 1:
                 face_value = face_values.pop()
-                if face_value in values:
-                    face_value = values[face_value]
-                else:
-                    face_value = int(face_value)
+                face_value = get_face_value(o_cards[0])
                 return face_value * fac(len(cards))
         if len(cards) >= 3 and is_run(o_cards, a_cards):
             min_card = o_cards[0]
@@ -83,10 +84,22 @@ def  comp10001go_valid_groups(groups):
         return True
 
 def comp10001go_play(discard_history, player_no, hand):
-    pass
+    hand.sort(key=get_face_value)
+    mid = len(hand) // 2
+    discard = hand[mid]
+    hand.remove(discard)
+    if player_no == 0:
+        discard_history.append([discard,])
+    else:
+        discard_history[-1].append(discard)
+    return discard
 
 def comp10001go_group(discard_history, player_no):
-    pass
+    return [[cards[player_no],] for cards in discard_history]
+
+def comp10001go_best_partitions(cards):
+    cards.sort(key=get_face_value)
+    
 
 if __name__ == '__main__':
     v = [
@@ -107,3 +120,7 @@ if __name__ == '__main__':
          comp10001go_valid_groups([])
     ]
     print(v)
+    discard = comp10001go_play([['0S', 'KH', 'AC', '3C'], ['JH', 'AD', 'QS', '5H'], ['9C', '8S', 'QH', '9S'], ['8C', '9D', '0D', 'JS'], ['5C', 'AH', '5S', '4C'], ['8H', '2D', '6C', '2C'], ['8D', '4D', 'JD', 'AS'], ['0H', '6S', '2H', 'KC'], ['KS', 'KD', '7S', '6H']], 3, ['QC'])
+    print(discard)
+
+    print(comp10001go_group([['0S', 'KH', 'AC', '3C'], ['JH', 'AD', 'QS', '5H'], ['9C', '8S', 'QH', '9S'], ['8C', '9D', '0D', 'JS'], ['5C', 'AH', '5S', '4C'], ['8H', '2D', '6C', '2C'], ['8D', '4D', 'JD', 'AS'], ['0H', '6S', '2H', 'KC'], ['KS', 'KD', '7S', '6H'], ['JC', 'QD', '4H', 'QC']], 3))
