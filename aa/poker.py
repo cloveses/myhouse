@@ -99,6 +99,10 @@ def comp10001go_group(discard_history, player_no):
 
 
 def val_col_card(val,col):
+    if col == 'B':
+        col = 'R'
+    else:
+        col = 'B'
     values = {10: '0', 11: 'J', 12: 'Q', 13: 'K'}
     if val in values:
         val = values[val]
@@ -108,61 +112,71 @@ def val_col_card(val,col):
     return [val + c for c in sub_colors[col]]
 
 def comp10001go_best_partitions(cards):
+    # 获取非A牌
     o_cards = [card for card in cards if 'A' not in card]
+    # 获取A牌
     a_cards = [card for card in cards if 'A' in card]
-
+    #非A牌按face value从大到小排序
+    o_cards.sort(key=get_face_value,reverse=True)
     runs = []
-
-    for i in range(len(o_cards)):
-        o_cards = o_cards[1:]
-        start_cart = o_cards[i]
+    # 尝试每张牌开始可构成的顺子
+    for start_cart in o_cards[:-1]:
+        if len(o_cards) < 2 or start_cart not in o_cards:
+            break
+        o_cards.sort(key=get_face_value,reverse=True)
         seq = get_face_value(start_cart)
-        colors = ['B', 'R']
-        # sub_colors = {'B':['S', 'C'], 'R':['H', 'D']}
-        color = get_color(start_cart)
-        if colors[0] != color:
-            colors = colors[::-1]
         run = [start_cart, ]
-
+        o_cards.remove(start_cart)
+        # 循环构成顺子
         while True:
-            seq += 1
-            color = colors[seq % 2]
+            seq -= 1
+            color = get_color(run[-1])
+            #构成顺子的下一张牌可能值
             next_cards = val_col_card(seq, color)
             next_a_cards = set('A'+c[1] for c in next_cards)
+            # 非A牌中查找可能的下一张牌
             next_card = None
             for c in next_cards:
                 if c in o_cards:
                     next_card = c
                     break
+
             if next_card:
                 run.append(next_card)
                 o_cards.remove(next_card)
-                seq += 1
+            # 尝试用A牌补齐顺子
             elif a_cards and next_a_cards & set(a_cards):
-                seq += 1
                 next_card = (next_a_cards & set(a_cards)).pop()
                 run.append(next_card)
                 a_cards.remove(next_card)
             else:
                 break
-        for i in range(-1,-len(run), -1):
-            if 'A' in run[i]:
+            # print('run', run)
+
+        # 除去顺子结尾的A牌
+        for j in range(-1,-len(run), -1):
+            if 'A' in run[j]:
+                a_cards.append(run[-1])
                 run = run[:-1]
             else:
                 break
+        # 丢弃长度小于2的顺子
         if len(run) > 2:
             runs.append(run)
-    
-
-
-
-
-
-
-
-
-
-    
+        else:
+            o_cards.extend(run)
+            
+    # 处理组成顺子剩下的牌
+    val_group = {}
+    for card in o_cards:
+        if card[0] in val_group:
+            val_group[card[0]].append(card)
+        else:
+            val_group[card[0]] = [card, ]
+    res = list(val_group.values())
+    res.extend(a_cards)
+    res.extend(runs)
+    return res
 
 if __name__ == '__main__':
     # v = [
@@ -187,4 +201,5 @@ if __name__ == '__main__':
     # print(discard)
 
     # print(comp10001go_group([['0S', 'KH', 'AC', '3C'], ['JH', 'AD', 'QS', '5H'], ['9C', '8S', 'QH', '9S'], ['8C', '9D', '0D', 'JS'], ['5C', 'AH', '5S', '4C'], ['8H', '2D', '6C', '2C'], ['8D', '4D', 'JD', 'AS'], ['0H', '6S', '2H', 'KC'], ['KS', 'KD', '7S', '6H'], ['JC', 'QD', '4H', 'QC']], 3))
-    print(comp10001go_best_partitions(['9D', 'AS', '4D', '4H', '6D', 'AH', '2C', 'JH', '3C', '9H']))
+    print(comp10001go_best_partitions(['9D', '7H', '6S', '6D', '8S', '1D', 'JH']))
+    print(comp10001go_best_partitions(['9D', '7H', '6S', '6D', 'AS', '1D', 'KH']))
