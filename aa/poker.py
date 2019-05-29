@@ -143,11 +143,95 @@ def comp10001go_play(discard_history, player_no, hand):
     return discard
 
 
+# def comp10001go_best_partitions(cards):
+#     # 获取非A牌
+#     o_cards = [card for card in cards if 'A' not in card]
+#     # 获取A牌
+#     a_cards = [card for card in cards if 'A' in card]
+#     #非A牌按face value从大到小排序
+#     o_cards.sort(key=get_face_value,reverse=True)
+#     runs = []
+#     # 尝试每张牌开始可构成的顺子
+#     for start_cart in o_cards[:-1]:
+#         if len(o_cards) < 2 or start_cart not in o_cards:
+#             break
+#         o_cards.sort(key=get_face_value,reverse=True)
+#         seq = get_face_value(start_cart)
+#         run = [start_cart, ]
+#         o_cards.remove(start_cart)
+#         # 循环构成顺子
+#         while True:
+#             seq -= 1
+#             color = get_color(run[-1])
+#             #构成顺子的下一张牌可能值
+#             next_cards = val_col_card(seq, color)
+#             next_a_cards = set('A'+c[1] for c in next_cards)
+#             # 非A牌中查找可能的下一张牌
+#             next_card = None
+#             for c in next_cards:
+#                 if c in o_cards:
+#                     next_card = c
+#                     break
+
+#             if next_card:
+#                 run.append(next_card)
+#                 o_cards.remove(next_card)
+#             # 尝试用A牌补齐顺子
+#             elif a_cards and next_a_cards & set(a_cards):
+#                 next_card = (next_a_cards & set(a_cards)).pop()
+#                 run.append(next_card)
+#                 a_cards.remove(next_card)
+#             else:
+#                 break
+#             # print('run', run)
+
+#         # 除去顺子结尾的A牌
+#         while True:
+#             if 'A' in run[-1]:
+#                 a_cards.append(run[-1])
+#                 run = run[:-1]
+#             else:
+#                 break
+
+#         # 丢弃长度小于2的顺子
+#         if len(run) > 2:
+#             runs.append(run)
+#         else:
+#             o_cards.extend(run)
+            
+#     # 处理组成顺子剩下的牌
+#     val_group = {}
+#     for card in o_cards:
+#         if card[0] in val_group:
+#             val_group[card[0]].append(card)
+#         else:
+#             val_group[card[0]] = [card, ]
+#     res = list(val_group.values())
+#     if a_cards:
+#         for a in a_cards:
+#             res.append([a,])
+#     res.extend(runs)
+#     return res
+
 def comp10001go_best_partitions(cards):
     # 获取非A牌
     o_cards = [card for card in cards if 'A' not in card]
     # 获取A牌
     a_cards = [card for card in cards if 'A' in card]
+
+    res = []
+    val_group = {}
+    for card in o_cards:
+        if card[0] in val_group:
+            val_group[card[0]].append(card)
+        else:
+            val_group[card[0]] = [card, ]
+    for k,v in val_group.items():
+        if len(v) > 1:
+            res.append(v)
+            for c in v:
+                o_cards.remove(c)
+
     #非A牌按face value从大到小排序
     o_cards.sort(key=get_face_value,reverse=True)
     runs = []
@@ -186,12 +270,13 @@ def comp10001go_best_partitions(cards):
             # print('run', run)
 
         # 除去顺子结尾的A牌
-        for j in range(-1,-len(run), -1):
-            if 'A' in run[j]:
+        while True:
+            if 'A' in run[-1]:
                 a_cards.append(run[-1])
                 run = run[:-1]
             else:
                 break
+
         # 丢弃长度小于2的顺子
         if len(run) > 2:
             runs.append(run)
@@ -205,8 +290,10 @@ def comp10001go_best_partitions(cards):
             val_group[card[0]].append(card)
         else:
             val_group[card[0]] = [card, ]
-    res = list(val_group.values())
-    res.extend(a_cards)
+    res.extend(val_group.values())
+    if a_cards:
+        for a in a_cards:
+            res.append([a,])
     res.extend(runs)
     return res
 
@@ -214,10 +301,8 @@ def comp10001go_group(discard_history, player_no):
     # cards = [cards[player_no] for cards in discard_history]
     my_discards = []
     for cards in discard_history:
-        try:
+        if player_no < len(cards):
             my_discards.append(cards[player_no])
-        except:
-            pass
     # print(my_discards)
     return comp10001go_best_partitions(my_discards)
 
@@ -243,7 +328,7 @@ if __name__ == '__main__':
     # discard = comp10001go_play([['0S', 'KH', 'AC', '3C'], ['JH', 'AD', 'QS', '5H'], ['9C', '8S', 'QH', '9S'], ['8C', '9D', '0D', 'JS'], ['5C', 'AH', '5S', '4C'], ['8H', '2D', '6C', '2C'], ['8D', '4D', 'JD', 'AS'], ['0H', '6S', '2H', 'KC'], ['KS', 'KD', '7S', '6H']], 3, ['QC', '6S', '2H', 'KC', '6C', '2C'])
     # print(discard)
 
-    print(comp10001go_group([['0S', 'KH', 'AC', '3C'], ['JH', 'AD', 'QS', '5H'], ['9C', '8S', 'QH', '9S'], ['8C', '9D', '0D', 'JS'], ['5C', 'AH', '5S', '4C'], ['8H', '2D', '6C', '2C'], ['8D', '4D', 'JD', 'AS'], ['0H', '6S', '2H', 'KC'], ['KS', 'KD', '7S', '6H'], ['JC', 'QD', '4H', 'QC']], 0))
+    # print(comp10001go_group([['0S', 'KH', 'AC', '3C'], ['JH', 'AD', 'QS', '5H'], ['9C', '8S', 'QH', '9S'], ['8C', '9D', '0D', 'JS'], ['5C', 'AH', '5S', '4C'], ['8H', '2D', '6C', '2C'], ['8D', '4D', 'JD', 'AS'], ['0H', '6S', '2H', 'KC'], ['KS', 'KD', '7S', '6H'], ['JC', 'QD', '4H', 'QC']], 0))
     # print(comp10001go_best_partitions(['9D', '7H', '6S', '6D', '8S', '1D', 'JH']))
     # print(comp10001go_best_partitions(['9D', '7H', '6S', '6D', 'AS', '1D', 'KH']))
     # print(comp10001go_best_partitions(['0H', '8S', '6H', 'AC', '0S', 'JS', '8C', '7C', '6D', 'QS']))
@@ -252,3 +337,4 @@ if __name__ == '__main__':
     # print(comp10001go_valid_groups(groups))
     # print(comp10001go_score_group(['3C', '4H', 'AS']))
     # print(comp10001go_valid_groups([['KC', 'KH', 'KS', 'KD'], ['2C']]))
+    print(comp10001go_best_partitions(['8C', '8S', '9D', '0S', '8D', 'JD', '5S', '5C', 'AC', 'AD']))
