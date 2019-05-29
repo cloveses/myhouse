@@ -31,8 +31,10 @@ def is_run(o_cards, a_cards):
             else:
                 pre_card_val = get_face_value(card) + index
 
+        # print('remain_cards', remain_cards)
+
         # 前后符合顺子规则
-        if get_face_value(remain_cards[0]) == pre_card_val + 1 and get_color(res_cards[-1]) != get_color(remain_cards[0]):
+        if remain_cards and get_face_value(remain_cards[0]) == pre_card_val + 1 and get_color(res_cards[-1]) != get_color(remain_cards[0]):
             res_cards.append(remain_cards[0])
             remain_cards = remain_cards[1:]
         # 尝试用A补齐
@@ -104,32 +106,41 @@ def comp10001go_play(discard_history, player_no, hand):
             my_discards.append(cards[player_no])
         except:
             pass
-    o_cards = [card for card in cards if 'A' not in card]
-    o_cards.sort(key=get_face_value,reverse=True)
-    need_cards = set()
-    for card in o_cards:
-        val = get_face_value(card)
-        need_cards.extend(val_col_card(val + 1, get_color(card)))
-        need_cards.extend(val_col_card(val + 1, get_color(card)))
+    o_cards = [card for card in my_discards if 'A' not in card]
+    discard = None
+    if o_cards:
+        o_cards.sort(key=get_face_value,reverse=True)
+        need_cards = set()
+        for card in o_cards:
+            val = get_face_value(card)
+            need_cards.update(val_col_card(val + 1, get_color(card)))
+            need_cards.update(val_col_card(val + 1, get_color(card)))
 
-    need_cards_val = [card[0] for card in o_cards]
+        need_cards_val = [card[0] for card in o_cards]
 
+        for need_card in need_cards:
+            if need_card in hand:
+                discard = need_card
+                break
+        if not discard:
+            for hand_card_val in need_cards_val:
+                for hand_card in hand:
+                    if hand_card_val in hand_card:
+                        discard = hand_card
+                        break
+                if discard:
+                    break
+    if not discard:
+        hand.sort(key=get_face_value)
+        mid = len(hand) // 2
+        discard = hand[mid]
 
-
-
-    hand.sort(key=get_face_value)
-    mid = len(hand) // 2
-    discard = hand[mid]
     hand.remove(discard)
     if player_no == 0:
         discard_history.append([discard,])
     else:
         discard_history[-1].append(discard)
     return discard
-
-def comp10001go_group(discard_history, player_no):
-    return [[cards[player_no],] for cards in discard_history]
-
 
 
 def comp10001go_best_partitions(cards):
@@ -197,33 +208,47 @@ def comp10001go_best_partitions(cards):
     res = list(val_group.values())
     res.extend(a_cards)
     res.extend(runs)
-    return [res,]
+    return res
+
+def comp10001go_group(discard_history, player_no):
+    # cards = [cards[player_no] for cards in discard_history]
+    my_discards = []
+    for cards in discard_history:
+        try:
+            my_discards.append(cards[player_no])
+        except:
+            pass
+    # print(my_discards)
+    return comp10001go_best_partitions(my_discards)
 
 if __name__ == '__main__':
-    v = [
-        comp10001go_score_group(['2C']),
-        comp10001go_score_group(['2C', '2S']),
-        comp10001go_score_group(['4C', '4H', '4S']),
-        comp10001go_score_group(['4C', '4H', '3S']),
-        comp10001go_score_group(['4C', '4H', 'AS']),
-        comp10001go_score_group(['KC', 'KH', 'KS', 'KD']),
-        comp10001go_score_group(['2C', '3D', '4S']),
-        comp10001go_score_group(['4S', '2C', '3D'])
-        ]
-    print(v)
-    v = [
-        comp10001go_valid_groups([['KC', 'KH', 'KS', 'KD'], ['2C']]),
-        comp10001go_valid_groups([['KC', 'KH', 'KS', 'AD'], ['2C']]),
-        comp10001go_valid_groups([['KC', 'KH', 'KS', 'KD'], ['2C', '3H']]),
-         comp10001go_valid_groups([])
-    ]
-    print(v)
-    discard = comp10001go_play([['0S', 'KH', 'AC', '3C'], ['JH', 'AD', 'QS', '5H'], ['9C', '8S', 'QH', '9S'], ['8C', '9D', '0D', 'JS'], ['5C', 'AH', '5S', '4C'], ['8H', '2D', '6C', '2C'], ['8D', '4D', 'JD', 'AS'], ['0H', '6S', '2H', 'KC'], ['KS', 'KD', '7S', '6H']], 3, ['QC'])
-    print(discard)
+    # v = [
+    #     comp10001go_score_group(['2C']),
+    #     comp10001go_score_group(['2C', '2S']),
+    #     comp10001go_score_group(['4C', '4H', '4S']),
+    #     comp10001go_score_group(['4C', '4H', '3S']),
+    #     comp10001go_score_group(['4C', '4H', 'AS']),
+    #     comp10001go_score_group(['KC', 'KH', 'KS', 'KD']),
+    #     comp10001go_score_group(['2C', '3D', '4S']),
+    #     comp10001go_score_group(['4S', '2C', '3D'])
+    #     ]
+    # print(v)
+    # v = [
+    #     comp10001go_valid_groups([['KC', 'KH', 'KS', 'KD'], ['2C']]),
+    #     comp10001go_valid_groups([['KC', 'KH', 'KS', 'AD'], ['2C']]),
+    #     comp10001go_valid_groups([['KC', 'KH', 'KS', 'KD'], ['2C', '3H']]),
+    #      comp10001go_valid_groups([])
+    # ]
+    # print(v)
+    # discard = comp10001go_play([['0S', 'KH', 'AC', '3C'], ['JH', 'AD', 'QS', '5H'], ['9C', '8S', 'QH', '9S'], ['8C', '9D', '0D', 'JS'], ['5C', 'AH', '5S', '4C'], ['8H', '2D', '6C', '2C'], ['8D', '4D', 'JD', 'AS'], ['0H', '6S', '2H', 'KC'], ['KS', 'KD', '7S', '6H']], 3, ['QC', '6S', '2H', 'KC', '6C', '2C'])
+    # print(discard)
 
-    print(comp10001go_group([['0S', 'KH', 'AC', '3C'], ['JH', 'AD', 'QS', '5H'], ['9C', '8S', 'QH', '9S'], ['8C', '9D', '0D', 'JS'], ['5C', 'AH', '5S', '4C'], ['8H', '2D', '6C', '2C'], ['8D', '4D', 'JD', 'AS'], ['0H', '6S', '2H', 'KC'], ['KS', 'KD', '7S', '6H'], ['JC', 'QD', '4H', 'QC']], 3))
-    print(comp10001go_best_partitions(['9D', '7H', '6S', '6D', '8S', '1D', 'JH']))
-    print(comp10001go_best_partitions(['9D', '7H', '6S', '6D', 'AS', '1D', 'KH']))
-    groups = comp10001go_best_partitions(['9D', '7H', '6S', '6D', 'AS', '1D', 'KH'])[0]
-    print(groups)
-    print(comp10001go_valid_groups(groups))
+    print(comp10001go_group([['0S', 'KH', 'AC', '3C'], ['JH', 'AD', 'QS', '5H'], ['9C', '8S', 'QH', '9S'], ['8C', '9D', '0D', 'JS'], ['5C', 'AH', '5S', '4C'], ['8H', '2D', '6C', '2C'], ['8D', '4D', 'JD', 'AS'], ['0H', '6S', '2H', 'KC'], ['KS', 'KD', '7S', '6H'], ['JC', 'QD', '4H', 'QC']], 0))
+    # print(comp10001go_best_partitions(['9D', '7H', '6S', '6D', '8S', '1D', 'JH']))
+    # print(comp10001go_best_partitions(['9D', '7H', '6S', '6D', 'AS', '1D', 'KH']))
+    # print(comp10001go_best_partitions(['0H', '8S', '6H', 'AC', '0S', 'JS', '8C', '7C', '6D', 'QS']))
+    # groups = comp10001go_best_partitions(['9D', '7H', '6S', '6D', 'AS', '1D', 'KH'])[0]
+    # print(groups)
+    # print(comp10001go_valid_groups(groups))
+    # print(comp10001go_score_group(['3C', '4H', 'AS']))
+    # print(comp10001go_valid_groups([['KC', 'KH', 'KS', 'KD'], ['2C']]))
