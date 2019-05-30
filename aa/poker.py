@@ -137,7 +137,7 @@ def comp10001go_play(discard_history, player_no, hand):
         a_hand = [card for card in hand if 'A' not in card]
         if a_hand:
             a_hand.sort(key=get_face_value)
-            discard = a_hand[0]
+            discard = a_hand[-1]
         else:
             mid = len(hand) // 2
             discard = hand[mid]
