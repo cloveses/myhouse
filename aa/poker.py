@@ -118,28 +118,44 @@ def comp10001go_play(discard_history, player_no, hand):
 
         need_cards_val = [card[0] for card in o_cards]
 
-        for need_card in need_cards:
-            if need_card in hand:
-                discard = need_card
-                break
-        if not discard:
-            for hand_card_val in need_cards_val:
-                for hand_card in hand:
-                    if hand_card_val in hand_card:
-                        discard = hand_card
-                        break
-                if discard:
+
+        for hand_card_val in need_cards_val:
+            for hand_card in hand:
+                if hand_card_val in hand_card:
+                    discard = hand_card
                     break
+            if discard:
+                break
+
+        if not discard:
+            for need_card in need_cards:
+                if need_card in hand:
+                    discard = need_card
+                    break
+
     if not discard:
-        hand.sort(key=get_face_value)
-        mid = len(hand) // 2
-        discard = hand[mid]
+        a_hand = [card for card in hand if 'A' not in card]
+        if a_hand:
+            a_hand.sort(key=get_face_value)
+            discard = a_hand[0]
+        else:
+            mid = len(hand) // 2
+            discard = hand[mid]
 
     hand.remove(discard)
+
     if player_no == 0:
         discard_history.append([discard,])
     else:
-        discard_history[-1].append(discard)
+        if discard_history:
+            if player_no < len(discard_history[-1]):
+                discard_history[-1][player_no] = discard
+            else:
+                discard_history[-1].append(discard)
+        else:
+            history = [None, ] * player_no
+            history.append(discard)
+            discard_history.append(history)
     return discard
 
 
