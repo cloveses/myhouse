@@ -63,7 +63,10 @@ for d in all_datas:
 wdatas = [['id', 'name', 'isnext', 'text', 'preId', 'ids', 'wife', 'daishu'],]
 for index,(preid,d) in enumerate(zip(preids,all_datas),1):
     # print(preid,d)
-    row = [index,d[3],d[0] if d[0] else '', d[4], preid+1, d[1], ''.join(d[5:]) if len(d) > 4 else '' , d[2]]
+    wife = ''.join(d[5:]) if len(d) > 4 else ''
+    wife = wife.replace('婚配', '')
+    wife = wife.replace('继配', '')
+    row = [index,d[3],d[0] if d[0] else '', d[4], preid+1, d[1], wife , d[2]]
     wdatas.append(row[:])
 
 # for wd in wdatas:
