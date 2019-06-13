@@ -18,9 +18,17 @@ def get_seq(s):
     else:
         return seqs[s[0]] + seqs[s[1]]
 
+def get_dest(ad):
+    dest =''
+    if '婚配' in ad:
+        dest += ad[7]
+    if '继配' in ad:
+        dest += ad[-1]
+    return dest
+
 all_datas = []
 word = wc.Dispatch('Word.Application')
-doc = word.Documents.Open('d:/lx/myhouse/aa/十一世张方成（联玉）一支36（已校）.doc',Encoding='gbk')
+doc = word.Documents.Open('d:/work/myhouse/aa/十一世张方成（联玉）一支36（已校）.doc',Encoding='gbk')
 data = []
 for index in range(2,len(doc.Paragraphs)):
     line = doc.Paragraphs[index].Range.text.strip()
@@ -51,10 +59,17 @@ for d in all_datas:
     else:
         d.insert(0,0)
 
+# for d in all_datas[:10]:
+#     print(d)
+
 preids = []
 for d in all_datas:
     for index,ad in enumerate(all_datas):
-        if d[4][:2] in ad[3]:
+
+        if d[1] < ad[1]:
+            preids.append(0)
+            break
+        if d[4][:2] in ad[3] and d[3][-2:] in get_dest(ad):
             preids.append(index)
             break
     else:
