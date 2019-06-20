@@ -13,6 +13,7 @@ import datetime
 import sys
 import os
 import threading
+import os
 
 class myThread (threading.Thread):
     def __init__(self, threadID, name, ip):
@@ -52,11 +53,11 @@ class Btch_P:
         else:
             os.mkdir('result')
             print('Ports目录生成成功！')
-        cmd2 = 'ping %s -n 2 >> result/results.txt' % (self.ip)
-        print(cmd2)
-        pingIp = os.system(cmd2)  # 执行100次ping命令
-        with open('result/results.txt','r') as f:
-            ssping = f.read()
+
+        cmd2 = 'ping %s -n 2' % (self.ip)
+        res = os.popen(cmd2)
+        ssping = res.read()
+
         pingIp2 = re.compile(r'来自..+', re.M).findall(ssping)  # 通过正则表达式筛选出需要的哪一行
         now = datetime.datetime.now()
         path = 'ping_result/'
@@ -68,13 +69,12 @@ class Btch_P:
         else:
             print(path + ' 目录已存在')
         print('写入文件')
-        with open('ping_result/' + str(now.year) + '-' + str(now.month) + '-' + str(now.day) + '__' + ip.replace('.','_')+ '.txt','a+', encoding='utf-8') as f:
+        with open('ping_result/' + str(now.year) + '-' + str(now.month) + '-' + str(now.day) + '__' + self.ip.replace('.','_')+ '.txt','a+') as f:
             f.write('ip地址是：' + self.ip + '时间是：'+ str(now.year) + '-' + str(now.month) + '-' + str(now.day) + '_' + str(now.minute) + '结果是：' + '\n' +str(pingIp2) + '\n')
             f.close()
 
-if __name__ == "__main__":
-    ip = sys.argv[1]
-    threadLock = threading.Lock()
+def batch_ping_main(ip):
+    print(ip)
     threads = []
     # 创建新线程
     for i in range(3):
@@ -82,7 +82,23 @@ if __name__ == "__main__":
 
     for t in threads:
         t.start()
-    for t in threads:
-        t.join()
 
+    # for t in threads:
+    #     t.join()
+    threads[-1].join()
+    print ("退出主线程")
+
+if __name__ == "__main__":
+    ip = sys.argv[1]
+    threads = []
+    # 创建新线程
+    for i in range(3):
+        threads.append(myThread(i, "Thread-{}".format(i), ip))
+
+    for t in threads:
+        t.start()
+
+    # for t in threads:
+    #     t.join()
+    threads[-1].join()
     print ("退出主线程")
