@@ -51,7 +51,12 @@ for mpn in datas:
     mpn = mpn[1]
     print(mpn)
     # mpn = 'GRM21BR61A225KA01L'
-    r = sess.get('https://www.findchips.com/search/' + urllib.parse.quote(mpn))
+    try:
+        r = sess.get('https://www.findchips.com/search/' + urllib.parse.quote(mpn) , timeout=(8,10))
+    except:
+        print('Error:',mpn)
+        all_datas.append(['Error',] * 3)
+        continue
     # print('get 2')
     r.encoding = 'utf-8'
 
@@ -113,7 +118,8 @@ for mpn in datas:
         res = []
         start = 0
         i = 0
-        while start <= need and i <= len(a_results):
+        print(a_results)
+        while start <= need and i < len(a_results):
             res.append([a_results[i][0],a_results[i][2],a_results[i][3]])
             start += a_results[i][1]
             i += 1
