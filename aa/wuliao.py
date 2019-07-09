@@ -6,6 +6,7 @@ from lxml import etree
 import time
 import random
 from datetime import datetime
+import sys
 
 def save_datas_xlsx(filename,datas):
     w = xlsxwriter.Workbook(filename)
@@ -41,7 +42,11 @@ headers = {'User-Agent':'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.11 (KHTML,
         }
 
 sess = requests.Session()
-sess.get('https://www.findchips.com/',headers=headers)
+try:
+    sess.get('https://www.findchips.com/',headers=headers, timeout=(8,10))
+except:
+    print('网络访问异常，请重新运行。')
+    sys.exit(0)
 # print('get 1')
 
 all_datas = []
@@ -54,7 +59,7 @@ for mpn in datas:
     try:
         r = sess.get('https://www.findchips.com/search/' + urllib.parse.quote(mpn) , timeout=(8,10))
     except:
-        print('Error:',mpn)
+        # print('Error:',mpn)
         all_datas.append(['Error',] * 3)
         continue
     # print('get 2')
@@ -118,7 +123,7 @@ for mpn in datas:
         res = []
         start = 0
         i = 0
-        print(a_results)
+        # print(a_results)
         while start <= need and i < len(a_results):
             res.append([a_results[i][0],a_results[i][2],a_results[i][3]])
             start += a_results[i][1]
