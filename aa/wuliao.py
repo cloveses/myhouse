@@ -98,7 +98,7 @@ for mpn in datas:
                 prices = tr.xpath('.//td//ul//li//span/text()')
                 # print('prices:', prices)
                 if prices:
-                    prices = [[int(total),float(price[1:])] for total,price in zip(prices[::2],prices[1::2])]
+                    prices = [[int(total),float(price[1:].replace(',', ''))] for total,price in zip(prices[::2],prices[1::2])]
                     prices.sort(key=lambda x:x[0], reverse=True)
                     tr_datas.append([stock,prices])
         # print(manufacter)
