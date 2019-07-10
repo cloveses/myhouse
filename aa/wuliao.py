@@ -65,7 +65,7 @@ for mpn in datas:
     print(mpn)
     # mpn = 'GRM21BR61A225KA01L'
     try:
-        r = sess.get('https://www.findchips.com/search/' + urllib.parse.quote(mpn) + '?currency=USD', timeout=(8,10))
+        r = sess.get('https://www.findchips.com/search/' + urllib.parse.quote(mpn) + '?currency=USD', timeout=(8,20))
     except:
         # print('Error:',mpn)
         all_datas.append(['Error',] * 4)
@@ -74,21 +74,19 @@ for mpn in datas:
     r.encoding = 'utf-8'
 
     html_tree = etree.HTML(r.text)
-    tbodies = html_tree.xpath('//tbody')
-
-    manufacters = html_tree.xpath('//h3[@class="distributor-title"]//a/text()')
-    manufacters = [m.strip() for m in manufacters]
-    manufacters = [m for m in manufacters if m]
-
-
+    manu_divs = html_tree.xpath('//div[@class="distributor-results"]')
     results = {}
-    for tbody, manufacter in zip(tbodies, manufacters):
-        if not need_manufacter(manufacter):
-            continue
-        trs = tbody.xpath('.//tr')
+
+    for manu_div in manu_divs:
+        manufacter = ''.join(manu_div.xpath('.//h3/text()')).strip()
+        if not manufacter:
+            manufacter = ''.join(manu_div.xpath('.//h3//a/text()')).strip()
+        # print('manufacter:', manufacter)
+        trs = manu_div.xpath('.//tbody//tr')
         tr_datas = []
         for tr in trs:
             stock = tr.xpath('.//td[@class="td-stock"]/text()')
+            # print('stock:', stock)
             if isinstance(stock, list):
                 stock = ''.join(stock)
             stock = [s for s in stock if s.isdigit()]
@@ -98,13 +96,14 @@ for mpn in datas:
                 stock = 0
             if stock:
                 prices = tr.xpath('.//td//ul//li//span/text()')
-                if prices and prices[1].startswith('$'):
+                # print('prices:', prices)
+                if prices:
                     prices = [[int(total),float(price[1:])] for total,price in zip(prices[::2],prices[1::2])]
                     prices.sort(key=lambda x:x[0], reverse=True)
                     tr_datas.append([stock,prices])
+        print(manufacter)
         if tr_datas:
             results[manufacter] = tr_datas
-
     # print(results)
 
     a_results = []
@@ -121,10 +120,11 @@ for mpn in datas:
         # print(a_results)
         res = a_results[0]
     else:
+        # print(results)
         for manufacter, cates in results.items():
             for cate in cates:
                 for apply_num, price in cate[1]:
-                    if apply_num <= need:
+                    if apply_num <= cate[0]:
                         a_results.append([manufacter,cate[0],apply_num,price])
                         break
 
@@ -152,11 +152,15 @@ for mpn in datas:
 
     all_datas.append(res)
 
-data = [['Part', 'MPN','MFG', 'Need qty','Spot buy QTY', 'Price', 'Stock', 'Supplier'],]
+data = [['Part', 'MPN','MFG', 'Need qty','Spot buy QTY', 'Price', 'Stock', 'Supplier', 'total_stocks'],]
 for d, all_data in zip(datas, all_datas):
     nd = d[:]
     nd.extend(all_data[1:])
     nd.append(all_data[0])
+    if ',' in nd[-2]:
+        nd.append(sum([int(s) for s in nd[-2].split(',')]))
+    else:
+        nd.append(int(nd[-2]) if nd[-2].isdigit() else '')
     data.append(nd)
 
 filename = datetime.now().isoformat()
