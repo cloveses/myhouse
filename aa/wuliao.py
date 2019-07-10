@@ -78,9 +78,9 @@ for mpn in datas:
     results = {}
 
     for manu_div in manu_divs:
-        manufacter = ''.join(manu_div.xpath('.//h3/text()')).strip()
+        manufacter = ''.join(manu_div.xpath('.//h3//a/text()')).strip()
         if not manufacter:
-            manufacter = ''.join(manu_div.xpath('.//h3//a/text()')).strip()
+            manufacter = ''.join(manu_div.xpath('.//h3/text()')).strip()
         # print('manufacter:', manufacter)
         trs = manu_div.xpath('.//tbody//tr')
         tr_datas = []
