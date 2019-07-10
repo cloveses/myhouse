@@ -29,6 +29,14 @@ def get_file_datas(filename,row_deal_function=None,grid_end=0,start_row=1):
         datas.append(row)
     return datas
 
+MANUFACTERS = ['Digi-key', 'Mouser Electronics', 'TTI', 'Verical', 'Arrow Electronics',
+    'Future Electronics' , 'Avnet', 'Rochestor', 'element14 Asia-Pacific', 'RS Components']
+
+def need_manufacter(manu):
+    for m in MANUFACTERS:
+        if m.lower() in manu.lower():
+            return True
+
 datas  = get_file_datas('testmdn.xlsx')
 # print(datas)
 
@@ -57,10 +65,10 @@ for mpn in datas:
     print(mpn)
     # mpn = 'GRM21BR61A225KA01L'
     try:
-        r = sess.get('https://www.findchips.com/search/' + urllib.parse.quote(mpn) , timeout=(8,10))
+        r = sess.get('https://www.findchips.com/search/' + urllib.parse.quote(mpn) + '?currency=USD', timeout=(8,10))
     except:
         # print('Error:',mpn)
-        all_datas.append(['Error',] * 3)
+        all_datas.append(['Error',] * 4)
         continue
     # print('get 2')
     r.encoding = 'utf-8'
@@ -75,6 +83,8 @@ for mpn in datas:
 
     results = {}
     for tbody, manufacter in zip(tbodies, manufacters):
+        if not need_manufacter(manufacter):
+            continue
         trs = tbody.xpath('.//tr')
         tr_datas = []
         for tr in trs:
@@ -103,11 +113,11 @@ for mpn in datas:
             if cate[0] >= need:
                 for apply_num, price in cate[1]:
                     if apply_num <= need:
-                        a_results.append([manufacter,apply_num,price])
+                        a_results.append([manufacter,apply_num,price,cate[0]])
                         break
 
     if a_results:                    
-        a_results.sort(key=lambda x: x[-1])
+        a_results.sort(key=lambda x: x[-2])
         # print(a_results)
         res = a_results[0]
     else:
@@ -125,22 +135,24 @@ for mpn in datas:
         i = 0
         # print(a_results)
         while start <= need and i < len(a_results):
-            res.append([a_results[i][0],a_results[i][2],a_results[i][3]])
+            res.append([a_results[i][0],a_results[i][2],a_results[i][3], a_results[i][1]])
             start += a_results[i][1]
             i += 1
+
     if res and isinstance(res[0],list):
         ms = [m[0] for m in res]
         apply_num = [str(m[1]) for m in res]
-        price = [str(m[-1]) for m in res]
-        res = [','.join(ms), ','.join(apply_num), ','.join(price)]
+        price = [str(m[-2]) for m in res]
+        stocks = [str(m[-1]) for m in res]
+        res = [','.join(ms), ','.join(apply_num), ','.join(price), ','.join(stocks)]
     elif res:
         res = [str(r) for r in res]
     else:
-        res = ['0',] * 3
+        res = ['0',] * 4
 
     all_datas.append(res)
 
-data = [['Part', 'MPN','MFG', 'Need qty','Spot buy QTY', 'Price', 'Supplier'],]
+data = [['Part', 'MPN','MFG', 'Need qty','Spot buy QTY', 'Price', 'Stock', 'Supplier'],]
 for d, all_data in zip(datas, all_datas):
     nd = d[:]
     nd.extend(all_data[1:])
