@@ -51,7 +51,7 @@ headers = {'User-Agent':'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.11 (KHTML,
 
 sess = requests.Session()
 try:
-    sess.get('https://www.findchips.com/',headers=headers, timeout=(8,10))
+    sess.get('https://www.findchips.com/',headers=headers, timeout=(30,60))
 except:
     print('网络访问异常，请重新运行。')
     sys.exit(0)
@@ -65,7 +65,7 @@ for mpn in datas:
     print(mpn)
     # mpn = 'GRM21BR61A225KA01L'
     try:
-        r = sess.get('https://www.findchips.com/search/' + urllib.parse.quote(mpn) + '?currency=USD', timeout=(8,20))
+        r = sess.get('https://www.findchips.com/search/' + urllib.parse.quote(mpn) + '?currency=USD', timeout=(30,60))
     except:
         # print('Error:',mpn)
         all_datas.append(['Error',] * 4)
