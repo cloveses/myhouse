@@ -34,7 +34,7 @@ MANUFACTERS = ['Digi-key', 'Mouser Electronics', 'TTI', 'Verical', 'Arrow Electr
 
 def need_manufacter(manu):
     for m in MANUFACTERS:
-        if m.lower() in manu.lower():
+        if manu.lower() in m.lower() or manu.lower() == m.lower():
             return True
 
 datas  = get_file_datas('testmdn.xlsx')
@@ -105,6 +105,7 @@ for mpn in datas:
         if tr_datas:
             results[manufacter] = tr_datas
     # print(results)
+    results = {k:v for k,v in results.items() if need_manufacter(k)}
 
     a_results = []
     for manufacter, cates in results.items():
