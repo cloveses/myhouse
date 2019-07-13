@@ -1,4 +1,3 @@
-
 import time
 print("五目並べへようこそ!!!")
 time.sleep(2)
@@ -69,10 +68,23 @@ def startGame():
 				continue
 		player+=1
 
+def get_xy(info, error_info, max):
+	while True:
+		try:
+			x = int(input(info))
+			if 0 < x <= max:
+				x -= 1
+				return x
+			else:
+				print('请输入正确的落子{}！'.format(error_info))
+		except:
+			print('请输入正确的落子{}！'.format(error_info))
+
+
 def playChess(chess):
 	#获取位置
-	x=int(input("==> X="))-1
-	y=int(input("==> Y="))-1
+	x = get_xy("==> X=", '列数', len(board[0]))
+	y = get_xy("==> Y=", '行数', len(board))	
 	if board[x][y]=="+":
 		board[x][y]=chess
 		printBoard()
