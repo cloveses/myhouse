@@ -11,12 +11,12 @@ from IPython.display import Image,display
 
 
 # url1 = "https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=1380645979,3378769833&fm=26&gp=0.jpg"
-urlastarts = ['./aa.jpg',
-	'./aa.jpg',
-	'./aa.jpg',
-	'./aa.jpg']
-urlbstarts = ['./aa.jpg',
-	"./aa.jpg"]
+urlastarts = ['./1.jpg',
+	'./2.jpg',
+	'./3.jpg',
+	'./4.jpg']
+urlbstarts = ['./5.jpg',
+	".6.jpg"]
 
 print("ゲームが始める前に,まず過程を知る")
 
@@ -121,11 +121,12 @@ def isGameContinue():
 	return True
 
 def whoWin(i,j):
-	if board[i][j]=="●":
+	if board[i][j]=="•":
 		print("黒が勝つ！")
 	else:
 		print("白が勝つ！")
-
+	display(Image('./1.jpg'))
+	time.sleep(2)
 	for i in range(10):
 		print("\a")
 
