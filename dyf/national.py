@@ -18,9 +18,13 @@ def deal(file, datas, deal_fun):
         for i,data in enumerate(datas):
             pos = time * len(datas) + i
             contents[pos] = deal_fun(contents[pos], data)
+    start = times * len(datas)
+
+    for i,data in zip(range(start,len(contents)) , datas):
+        contents[i] = deal_fun(contents[pos], data)
 
     # return contents
-    with open('res.txt', 'wb') as f:
+    with open(file, 'wb') as f:
         f.write(contents)
 
 def deal_fun(a,b,opt):
