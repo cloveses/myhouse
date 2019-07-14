@@ -34,10 +34,7 @@ def deal_fun(a,b,opt):
         s = a - b
     elif opt == 2:
         s = a ^ b
-    if s < 0 or s > 255:
-        return 0
-    else:
-        return s
+    return s % 256
 
 def main():
     opt = input('选择计算方法(0 默认为加法, 1 为减法 ,2 为异或)：')
