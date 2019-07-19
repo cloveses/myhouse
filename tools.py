@@ -11,7 +11,8 @@ def get_clip():
 def set_clip(data):
     w.OpenClipboard()
     w.EmptyClipboard()
-    w.SetClipboardText(data)
+    # w.SetClipboardText(win32con.CF_TEXT, data)
+    w.SetClipboardData(win32con.CF_UNICODETEXT, data)
     w.CloseClipboard()
 
 def get_file_datas(filename,row_deal_function=None,grid_end=0,start_row=1):
@@ -28,13 +29,14 @@ def get_file_datas(filename,row_deal_function=None,grid_end=0,start_row=1):
     return datas
 
 def find_data(idcode, datas):
+    print(idcode)
     for data in datas:
-        if data[2].lower() == idcode.lower():
+        if data[2].lower() == idcode.lower().strip():
             return data
 
 if __name__ == '__main__':
-    filename = input('please input filename:')
-    datas = get_file_datas(filename)
+    # filename = input('please input filename:')
+    datas = get_file_datas('244人核查结果反馈表汇总.xls')
     while True:
         command = input(' q ? ')
         if command == 'q':
@@ -45,11 +47,13 @@ if __name__ == '__main__':
             print('Do not find idcode from clip!')
             continue
         else:
-            data = find_data(idcode)
+            data = find_data(idcode, datas)
             if data:
+                print(data)
                 data = [str(int(d)) if isinstance(d, float) else str(d) for d in data]
-                for d in data[:]:
-                    c = None
+                c = None
+                for d in data[4:12]:
+                    print(d)
                     set_clip(d)
                     c = input()
                     if c == 'q':
