@@ -27,8 +27,14 @@ def get_file_datas(filename,row_deal_function=None,grid_end=0,start_row=1):
         datas.append(row)
     return datas
 
+def find_data(idcode, datas):
+    for data in datas:
+        if data[2].lower() == idcode.lower():
+            return data
+
 if __name__ == '__main__':
-    datas = get_file_datas('data.xlsx')
+    filename = input('please input filename:')
+    datas = get_file_datas(filename)
     while True:
         command = input(' q ? ')
         if command == 'q':
@@ -37,14 +43,16 @@ if __name__ == '__main__':
         idcode = get_clip()
         if not idcode:
             print('Do not find idcode from clip!')
+            continue
         else:
-            
-        for data in datas:
-            c = None
-            if c == 'q':
-                break
-            for d in data:
-                set_clip(d)
-                c = input()
-                if c == 'q':
-                    break
+            data = find_data(idcode)
+            if data:
+                data = [str(int(d)) if isinstance(d, float) else str(d) for d in data]
+                for d in data[:]:
+                    c = None
+                    set_clip(d)
+                    c = input()
+                    if c == 'q':
+                        break
+            else:
+                print('Do not find idcode from excel!')
