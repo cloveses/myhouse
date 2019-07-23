@@ -26,6 +26,8 @@ def main():
     input('手工登录完成？')
     datas = get_file_datas('in.xlsx')
     for data in datas:
+        print(data)
+        print(data[2], data[4], data[5])
         br.switch_to_frame('right')
         br.switch_to_frame('UpperHalf')
         id_html = br.find_element_by_xpath('//input[@id="ctl00_ContentPlaceHolder_TextBox_StudentIDNO"]')
@@ -52,11 +54,16 @@ def main():
         gx_html.send_keys(data[9])
         gxph_html = br.find_element_by_xpath('//input[@id="ctl00_ContentPlaceHolder_TextBox_LXDH"]')
         p = str(int(data[10])) if isinstance(data[10], float) else data[10]
+        if not p:
+            p = '无'
         gxph_html.send_keys(p)
         memo_html = br.find_element_by_xpath('//input[@id="ctl00_ContentPlaceHolder_TextBox_HCQKSM"]')
         memo_html.send_keys(data[11])
-        input('点击保存和弹出的对话框。')
+        input('请选择类别后再点击保存和确认弹出的对话框。')
         br.switch_to_default_content()
+        q = input('是否继续？(q为退出)')
+        if q.lower() == 'q':
+            break
 
 
 if __name__ == '__main__':
