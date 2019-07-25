@@ -20,11 +20,12 @@ def get_file_datas(filename,row_deal_function=None,grid_end=0,start_row=1):
         datas.append(row)
     return datas
 
-def main():
+def main(br, datas):
     br = get_explorer('https://xj.ahjygl.gov.cn/SMS.UI/Pages/Common/Login.aspx')
     # br.implicitly_wait(20)
     input('手工登录完成？')
     datas = get_file_datas('in.xlsx')
+# def main():
     for data in datas:
         print(data)
         print(data[2], data[4], data[5])

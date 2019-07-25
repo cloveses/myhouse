@@ -1,5 +1,7 @@
 import xlrd
 import sqlite3
+import sys
+import os
 
 def get_file_datas(filename,row_deal_function=None,grid_end=0,start_row=1):
     """start_row＝1 有一行标题行；gred_end=1 末尾行不导入"""
@@ -40,14 +42,20 @@ def row_data_clean(row):
 
 if __name__ == '__main__':
     filename = 'my.db'
-    datas = get_file_datas('my.xlsx', row_data_clean)
+    xlsx_filename = input('源电子表格文件名：')
+    if not xlsx_filename:
+        xlsx_filename = 'my.xlsx'
+    if not os.path.exists(xlsx_filename):
+        print('你指定的文件不存在：', xlsx_filename)
+        sys.exit(0)
+    datas = get_file_datas(xlsx_filename, row_data_clean)
     mydb = MyDb(filename)
-    tab_name = input('数据表的表名：')
-    create_sql = input('创建表格的SQL列表和类型:')
+    tab_name = input('数据库中数据表的表名：')
+    create_sql = input('创建表格的SQL列表和类型:\naa text,bb int...\n')
     create_sql = ' '.join(('create table', tab_name, '(', create_sql, ')'))
-    print('insert into tabname () vlaues()')
+    # print('insert into tabname () vlaues()')
     sql_colname = input('插入数据表的列名:')
     sql_params = ','.join(['?' for i in range(len(datas[0]))])
     sql =' '.join(('insert into', tab_name, '(', sql_colname, ') values (', sql_params, ')'))
-    print(sql)
+    # print(sql)
     mydb.insert(create_sql, sql, datas)
