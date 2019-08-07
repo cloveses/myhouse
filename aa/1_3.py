@@ -10,17 +10,13 @@ Original file is located at
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
-
 x = [[0],[0],[1],[1],[0]]
 a =np.array(x)
 y = [[0],[1],[1],[0],[0]]
 b =np.array(y)
 X=tf.constant(a.astype(np.float32))
 Y=tf.constant(b.astype(np.float32))
-
-
 sess = tf.InteractiveSession()
-
 tf.global_variables_initializer().run()
 
 
