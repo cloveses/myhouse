@@ -41,6 +41,7 @@ with tf.Session() as sess:
     for i in range(times):
         # 计算首个正方形对应坐标数据
         if xs is None:
+            # 喂入数据，执行计算图进行计算
             res = sess.run(pts, feed_dict={square_len:s, transf:t, points:p})
             xs, ys = res
             plt.plot(*get_xys(xs, ys), 'g')
