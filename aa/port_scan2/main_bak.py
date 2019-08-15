@@ -15,21 +15,18 @@ import scan
 import queue
 import threading
 import time
-import random
-
-scan.syn_portscan('127.0.0.1', 1234)
 
 #------------------------------------------------
 print('欢迎使用外网端口监测系统V4.0')
 print('---------------------------->>>>>>>>>--------\n请在target.txt中设置资产IP+资产端口，格式如下：\n10.10.10.10_80\n--------<<<<<<<<<----------------------------')
 print('目前支持扫描方式：1.SYN扫描 2.Telnet扫描')
 
+exitFlag = 0
+
 method = input('请输入扫描方式的序号：')
 method = int(method)
 thread_input = input('请输入端口扫描线程：')
 thread_input = int(thread_input)
-
-queueLock = threading.Lock()
 
 
 class myThread (threading.Thread):
@@ -38,51 +35,63 @@ class myThread (threading.Thread):
         self.threadID = threadID
         self.url = url
         self.ports = ports
-
     def run(self):
-        time.sleep(random.randint(1,4))
         print ("开启线程：" + self.url)
         goscan(self.url, self.ports , method)
         print ("退出线程：" + self.url)
 
 def goscan(url, ports ,method):
-    while not ports.empty():
-        try:
+    if method == 1:
+        while not exitFlag:
             queueLock.acquire()
-            port = ports.get()
-            print ("线程名称：%s | 当前加载payload： %s" % (url, port))
-            if method == 1:
+            if not workQueue.empty():
+                port = ports.get()
+                queueLock.release()
+                print ("线程名称：%s | 当前加载payload： %s" % (url, port))
                 scan.syn_portscan(url, port)
-            elif method == 2:
+            else:
+                queueLock.release()
+            time.sleep(1)
+    elif method == 2:
+        while not exitFlag:
+            queueLock.acquire()
+            if not workQueue.empty():
+                port = ports.get()
+                queueLock.release()
+                print ("线程名称：%s | 当前加载payload： %s" % (url, port))
                 scan.telnet_portscan(url, port)
-        finally:
-            queueLock.release()
-        time.sleep(random.randint(1,2))
-
-
+            else:
+                queueLock.release()
+            time.sleep(1)
 threadList = []
 for i in open('ip.txt','r'):
     threadList.append(i)
-
-workQueue = queue.Queue(65535)
-# 填充队列
-for port in range(1,65535):
-    workQueue.put(port)
-
+queueLock = threading.Lock()
+workQueue = queue.Queue(thread_input)
 threads = []
 threadID = 1
 
 # 创建新线程
 for url in threadList:
     thread = myThread(threadID, url, workQueue)
+    thread.start()
     threads.append(thread)
     threadID += 1
 
-for t in threads:
-    t.start()
+# 填充队列
+queueLock.acquire()
+for port in range(1,65535):
+    workQueue.put(port)
+queueLock.release()
+
+# 等待队列清空
+while not workQueue.empty():
+    pass
+
+# 通知线程是时候退出
+exitFlag = 1
 
 # 等待所有线程完成
 for t in threads:
     t.join()
-
 print ("退出主线程")
