@@ -17,8 +17,6 @@ import threading
 import time
 import random
 
-scan.syn_portscan('127.0.0.1', 1234)
-
 #------------------------------------------------
 print('欢迎使用外网端口监测系统V4.0')
 print('---------------------------->>>>>>>>>--------\n请在target.txt中设置资产IP+资产端口，格式如下：\n10.10.10.10_80\n--------<<<<<<<<<----------------------------')
@@ -26,8 +24,8 @@ print('目前支持扫描方式：1.SYN扫描 2.Telnet扫描')
 
 method = input('请输入扫描方式的序号：')
 method = int(method)
-thread_input = input('请输入端口扫描线程：')
-thread_input = int(thread_input)
+# thread_input = input('请输入端口扫描线程：')
+# thread_input = int(thread_input)
 
 queueLock = threading.Lock()
 
@@ -46,35 +44,43 @@ class myThread (threading.Thread):
         print ("退出线程：" + self.url)
 
 def goscan(url, ports ,method):
-    while not ports.empty():
-        try:
-            queueLock.acquire()
-            port = ports.get()
-            print ("线程名称：%s | 当前加载payload： %s" % (url, port))
-            if method == 1:
-                scan.syn_portscan(url, port)
-            elif method == 2:
-                scan.telnet_portscan(url, port)
-        finally:
-            queueLock.release()
-        time.sleep(random.randint(1,2))
+    # 将序号对应的扫描方式函数放入字典中
+    methods = {1: scan.syn_portscan, 2: scan.telnet_portscan}
+    t_numbers = 0
+    threads = []
 
+    # 循环添加扫描线程
+    for i in range(1, ports+1):
+        print ("线程名称：%s | 当前加载payload： %s" % (url, i))
+        # 创建并添加线程， 根据序号使用对应的扫描方式函数
+        threads.append(threading.Thread(target=methods[method], args=(url, i)))
+        #线程创建数量达到200时执行启动其中的所有线程
+        if t_numbers >= 200:
+            for t in threads:
+                t.start()
+            for t in threads:
+                t.join()
+            t_numbers = 0
+            threads = []
+        t_numbers += 1
+    else:
+        # 执行余下的所有线程
+        if threads:
+            for t in threads:
+                t.start()
+            for t in threads:
+                t.join()
 
 threadList = []
 for i in open('ip.txt','r'):
     threadList.append(i)
-
-workQueue = queue.Queue(65535)
-# 填充队列
-for port in range(1,65535):
-    workQueue.put(port)
 
 threads = []
 threadID = 1
 
 # 创建新线程
 for url in threadList:
-    thread = myThread(threadID, url, workQueue)
+    thread = myThread(threadID, url, ports=65535)
     threads.append(thread)
     threadID += 1
 
