@@ -1,7 +1,7 @@
 import threading
 import paramiko
-# 创建SSH对象
 
+# 创建SSH对象
 
 def opr(params):
     commands_centos = ('yum install curl -y', 'curl -sS https://get.docker.com/ | sh',
@@ -43,10 +43,10 @@ def opr(params):
             print(command)
             print('Info:', res)
             if err:
-                print(host, 'Error:', err)
+                print(params[0], 'Error:', err)
                 break
         else:
-            print('%s finished!' % host)
+            print('%s finished!' % params[0])
         # 关闭连接
         ssh.close()
 
@@ -73,7 +73,7 @@ with open('namepw.txt','r') as f:
         datas.append(params)
         if len(datas) >= thread_num:
             start_command(datas)
-        datas = []
+            datas = []
 
 if datas:
     start_command(datas)
