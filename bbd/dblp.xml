@@ -15,6 +15,7 @@
 <year>2018</year>
 <ee>https://spectreattack.com/spectre.pdf</ee>
 </article>
+
 <article mdate="2018-01-07" key="tr/meltdown/m18" publtype="informal">
 <author>Moritz Lipp</author>
 <author>Michael Schwarz 0001</author>
@@ -31,13 +32,15 @@
 <ee>https://meltdownattack.com/meltdown.pdf</ee>
 <year>2018</year>
 </article>
-<book mdate="2019-05-27" key="tr/acm/CS2013">
+
+<article mdate="2019-05-27" key="tr/acm/CS2013">
 <title>Computer Science Curricula 2013</title>
 <publisher>ACM Press and IEEE Computer Society Press</publisher>
 <year>2013</year>
 <ee>https://doi.org/10.1145/2534860</ee>
 <isbn>978-1-4503-2309-3</isbn>
-</book>
+</article>
+
 <article mdate="2017-06-08" key="tr/gte/TR-0263-08-94-165" publtype="informal">
 <author>Frank Manola</author>
 <title>An Evaluation of Object-Oriented DBMS Developments: 1994 Edition.</title>
@@ -46,7 +49,9 @@
 <month>August</month>
 <year>1994</year>
 <url>db/labs/gte/index.html#TR-0263-08-94-165</url>
-</article><article mdate="2019-05-27" key="tr/gte/TR-0222-10-92-165" publtype="informal">
+</article>
+
+<article mdate="2019-05-27" key="tr/gte/TR-0222-10-92-165" publtype="informal">
 <author>Michael L. Brodie</author>
 <author>Michael Stonebraker</author>
 <title>DARWIN: On the Incremental Migration of Legacy Information Systems</title>
