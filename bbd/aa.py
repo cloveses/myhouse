@@ -14,7 +14,7 @@ class articleHandler(xml.sax.ContentHandler):
 
     def startDocument(self):
         # self.conn = psycopg2.connect(host='127.0.0.1',port=50087, database='test',user='postgres', password='sunny13304918909')
-        self.conn = psycopg2.connect(host='127.0.0.1', database='test',user='postgres', password='123456')
+        self.conn = psycopg2.connect(host='192.168.7.233', database='test',user='postgres', password='123456')
         self.cur = self.conn.cursor()
 
     def endDocument(self):
