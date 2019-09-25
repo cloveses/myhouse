@@ -1,23 +1,23 @@
-# 用于存储数据的节点类
-class Node:
-    def __init__(self, data, npointer=None):
-        # 数据
-        self.data = data
-        # 指向下一条数据
-        self.npointer = npointer
+    # 用于存储数据的节点类
+    class Node:
+        def __init__(self, data, npointer=None):
+            # 数据
+            self.data = data
+            # 指向下一条数据
+            self.npointer = npointer
+            
+        # 获取下一条数据
+        def get_next(self):
+            return self.npointer
         
-    # 获取下一条数据
-    def get_next(self):
-        return self.npointer
-    
-    # 设定下一条数据
-    def set_next(self, node):
-        self.npointer = node
-    
-    # 获取节点的数据
-    def get_data(self):
-        return self.data
-    
+        # 设定下一条数据
+        def set_next(self, node):
+            self.npointer = node
+        
+        # 获取节点的数据
+        def get_data(self):
+            return self.data
+
 class MyQueue:
     
     def __init__(self,first_node=None):
@@ -25,7 +25,19 @@ class MyQueue:
         self.first_node = first_node
         # 存储队列中元素个数
         self.__count = 0
-        
+
+    def Enqueue(self, data):
+        # 队列不为空则找到最后一个元素后，在其后增加一个节点类
+        if self.first_node:
+            np = self.first_node
+            for i in range(self.__count - 1):
+                np = np.get_next()
+            np.set_next(Node(data))
+        # 队列为空，直接创建节点类并置为首个节点
+        else:
+            self.first_node = Node(data)
+        self.__count += 1
+
     def PrintQueue(self):
         # 队列不为空则循环打印队列中数据
         if self.first_node:
@@ -40,18 +52,6 @@ class MyQueue:
         else:
             print('Empty!')
         
-    def Enqueue(self, data):
-        # 队列不为空则找到最后一个元素后，在其后增加一个节点类
-        if self.first_node:
-            np = self.first_node
-            for i in range(self.__count - 1):
-                np = np.get_next()
-            np.set_next(Node(data))
-        # 队列为空，直接创建节点类并置为首个节点
-        else:
-            self.first_node = Node(data)
-        self.__count += 1
-
     def Dequeue(self):
         # 队列为空则无法出列
         if not self.first_node:
