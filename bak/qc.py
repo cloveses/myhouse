@@ -1,3 +1,5 @@
+import unittest
+
 class MyQueue:
 
     def __init__(self, data=None):
@@ -31,6 +33,7 @@ class MyQueue:
         first = self.pnext
         second = first.pnext
         self.pnext = second
+        self.__count -= 1
         return first.data
 
     def Count(self):
@@ -50,16 +53,30 @@ class MyQueue:
                         return True
                     pn = pn.pnext
 
-q = MyQueue()
-q.PrintQueue()
+class TestMyQueue(unittest.TestCase):
+    def test_fun(self):
+        q = MyQueue()
+        # q.PrintQueue()
+        for i in range(10):
+            q.Enqueue(i)
+        self.assertEqual(q.Count(),10)
+        for i in range(3):
+            self.assertEqual(q.Dequeue(), i)
+            self.assertEqual(q.Count(), 10-i-1)
+        self.assertTrue(q.Contains(4))
+        self.assertTrue(q.Contains(9))
+        self.assertFalse(q.Contains(100))
 
-q.Enqueue(1)
-q.PrintQueue()
-q.Enqueue(2)
-q.PrintQueue()
-for i in range(3,8):
-    q.Enqueue(i)
-q.PrintQueue()
-print(q.Count())
-for i in range(6,9):
-    print(i, q.Contains(i))
+
+if __name__ == '__main__':
+    unittest.main()
+        # q.Enqueue(1)
+        # q.PrintQueue()
+        # q.Enqueue(2)
+        # q.PrintQueue()
+        # for i in range(3,8):
+        #     q.Enqueue(i)
+        # q.PrintQueue()
+        # print(q.Count())
+        # for i in range(6,9):
+        #     print(i, q.Contains(i))
