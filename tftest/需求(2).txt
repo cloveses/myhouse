@@ -1,0 +1,22 @@
+﻿需求(python, tensorflow)：在循环里替换一个模型函数detect_img_batch，保持输入输出不变。
+
+1.原循环文件abc_edit.py, 需要改动的循环在236~324行。
+
+2.原循环主要相关功能和原旧的模型函数，
+	2.1 读取watch_dir目录下的图片集
+	2.2 把图片集送入detect_img_batch函数（需要被替换掉的原旧的模型函数）处理，
+	    处理好的图片存入ouput文件夹，返回图片里目标参数out_infos。
+	2.3 把out_infos里的参数子集detections传给mot_tracker.update函数
+	2.4 原函数输入有用batch, 新的函数还没有batch, 希望能添加batch
+
+3.新的模型函数：在image_demo_multi_new.py里的,函数mul_image里的对图片的操作。
+  所有输入（图片集），输出（处理过的图片集，detections）保持不变
+
+注.
+新旧模型函数都是识别图片中目标，并返回坐标和信任值。
+
+
+
+
+
+
