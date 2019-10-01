@@ -1,4 +1,4 @@
-
+from PIL import Image, ImageDraw, ImageFont
 
 def get_datas(filename):
     with open(filename, 'r', encoding='utf-8-sig') as f:
@@ -20,6 +20,31 @@ def get_datas(filename):
         res.extend(after_high_datas)
         return res
 
+def get_points(filename='point.txt'):
+    res = {}
+    with open(filename) as f:
+        for line in f.readlines():
+            if line.strip():
+                # print(line.split(','))
+                name, x, y = line.strip().split(',')
+                res[name.lower()] = (int(x), int(y))
+    return res
+
+def write_image(imgfile, filename='raw_data.csv'):
+    img = Image.open(imgfile)
+    draw = ImageDraw.Draw(img)
+    datas = get_datas(filename)
+    points = get_points()
+    font = ImageFont.truetype('C:/windows/fonts/Arial.ttf', size=14)
+    for data in datas:
+        name = data[0].lower()
+        if name in points:
+            draw.text(points[name], str(data[4]), font=font,  fill = (255,0,0))
+    img.save('s.jpg')
+    img.close()
+
 
 if __name__ == '__main__':
-    print(get_datas('raw_data.csv'))
+    # print(get_datas('raw_data.csv'))
+    # print(get_points())
+    write_image('usa.jpg')
