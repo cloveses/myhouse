@@ -1,19 +1,25 @@
 from PIL import Image, ImageDraw, ImageFont
 
 def get_datas(filename):
+    # 打开文件
     with open(filename, 'r', encoding='utf-8-sig') as f:
         ds = []
+        # 按行读取数据，并分行处理
         for line in f.readlines():
             # print(line)
             row = line.split(',')
             row = [r.strip() for r in row]
             if row[1].isdigit() and row[2].isdigit():
                 print(row)
+                # 对指定列进行数据类型转换为浮点数
                 row[4] = float(row[4])
                 row[6] = float(row[6])
                 ds.append(row)
+        # 按E列数据大小排序
         ds.sort(key=lambda x: x[4])
+        # 获取E列小于G列的
         before_low_datas = [d for d in ds if d[4] < d[6]]
+        # 获取E列大小G列的
         after_high_datas = [d for d in ds if d[4] > d[6]]
         res = []
         res.extend(before_low_datas)
