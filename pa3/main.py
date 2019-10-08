@@ -51,15 +51,18 @@ def printOrderSummaryMatrix(summaries, interval):
     title = 'ORDER SUMMARY'
     print(format(title, ' >30'))
     print()
-    print('    TIME \\ DAY  | 1 2 3 4 5 6 7 8 9 10')
-    print('------------------------------------------------')
-    i = 0
-    for summary in summaries:
+    seq_string =''
+    seqs = list(range(1,len(summaries[0]) + 1))
+    for seq in seqs:
+        seq_string += format(str(seq), ' >2') + ' '
+    seq_string = seq_string.strip()
+    print('    TIME \\ DAY  |  ' + seq_string )
+    print('-' * (18 + len(seq_string) + 2))
+    for i in range(((24 - 6) * 60) // interval):
         label = labelString(i, interval=interval)
         print(format(label, ' >15'), end=' | ')
-        summary = [format(str(s), ' >2') for s in summary]
+        summary = [format(str(s), ' >2') for s in summaries[i]]
         print(' '.join(summary))
-        i += 1
     print()
 
 def printHistogram(summaries, nday, interval):
@@ -68,12 +71,11 @@ def printHistogram(summaries, nday, interval):
     print(format(title, ' ^60'))
     print()
     i = 0
-    for summary in summaries:
+    for i in range(((24 - 6) * 60) // interval):
         label = labelString(i, interval=interval)
         print(format(label, ' >15'), end=' | ')
-        order_num = summary[nday - 1]
+        order_num = summaries[i][nday - 1]
         print('*' * order_num)
-        i += 1
     print()
 
 def main():
