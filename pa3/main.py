@@ -82,6 +82,7 @@ def main():
     days = get_input('How many days would you like to include?')
     interval = get_input('Please specify the length of the time interval in minutes:')
     summaries = composeOrderMatrix(days)
+    print(summaries)
     printOrderSummaryMatrix(summaries, interval)
     nday = 0
     while nday != -1:
