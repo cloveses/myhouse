@@ -1,0 +1,11 @@
+this
+file
+contains
+
+an
+empty
+line
+and
+some
+  
+space
