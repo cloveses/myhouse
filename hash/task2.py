@@ -15,8 +15,11 @@ def load_dictionary(hash_table, filename, time_limit=None):
 
 def load_dictionary_time(hash_base, table_size, filename, max_time):
     hashtable = HashTable(table_capacity=table_size, hash_base=hash_base)
-    duration = load_dictionary(hashtable, filename)
-    return hashtable.count, duration if duration <= max_time else None
+    try:
+        duration = load_dictionary(hashtable, filename, max_time)
+        return hashtable.count, duration
+    except TimeoutError:
+        return hashtable.count, None
 
 def table_load_dictionary_time(max_time):
     files = ('english_small.txt', 'english_large.txt', 'french.txt')

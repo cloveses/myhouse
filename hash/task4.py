@@ -13,7 +13,8 @@ class HashTable:
     def __getitem__(self, key):
         di = 0
         while True:
-            key_hash = (self.hash(key) + di) % self.table_capacity
+            qdi = ((-1) ** ((di + 1) % 2)) * (((di + 1) // 2) ** 2)
+            key_hash = (self.hash(key) + qdi) % self.table_capacity
             if key_hash > self.table_capacity or not self.table[key_hash]:
                 raise KeyError
             elif self.table[key_hash] and self.table[key_hash][0] == key:
@@ -125,7 +126,7 @@ def table_load_dictionary_statistics(max_time):
                 datas = [str(d) for d in datas]
                 res.append(datas)
                 print(datas)
-    with open('output_task3.csv', 'w') as f:
+    with open('output_task4.csv', 'w') as f:
         for r in res:
             line = ','.join(r)
             f.write(line)
