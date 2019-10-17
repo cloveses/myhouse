@@ -33,7 +33,6 @@ class HashTable:
                 self.count += 1
                 break
             elif self.table[key_hash] and key == self.table[key_hash][0]:
-                # 当单词在hash表中存在时，将其对应的值加1，并引发错误
                 self.table[key_hash] = (key, self.table[key_hash][1] + item)
                 raise KeyError
             di += 1
@@ -92,10 +91,8 @@ class Freq:
         self.hash_table = HashTable()
 
     def add_file(self, filename):
-        # 打开文件，逐行获取单词
         with open(filename, 'r', encoding='utf-8') as f:
             for line in f.readlines():
-                # 分割每行单词
                 words = re.split(r'[^a-zA-Z\-]+',line.strip().lower())
                 for word in words:
                     w = word.strip()
@@ -103,7 +100,6 @@ class Freq:
                         try:
                             self.hash_table[w] = 1
                         except KeyError:
-                            # 发生时表示单词在hash表中已经存在
                             times = self.hash_table[w]
                             if times > self.maxum:
                                 self.maxum = times
@@ -119,3 +115,17 @@ class Freq:
             return 2
         else:
             return 1
+
+    def evaluate_frequency(self, other_filename):
+        res = [0,] * 4
+        # 打开文件并逐行获取单词
+        with open(other_filename, 'r', encoding='utf-8') as f:
+            for line in f.readlines():
+                words = re.split(r'[^a-zA-Z\-]+',line.strip().lower())
+                for word in words:
+                    w = word.strip()
+                    if w:
+                        # 获取单词的频率特性
+                        res[self.rarity(w)] += 1
+        return tuple(res)
+
