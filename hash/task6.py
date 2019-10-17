@@ -1,10 +1,7 @@
-#!/usr/bin/env python3
-"""
-:author: Graeme Gange
-"""
+import re
 
 class HashTable:
-    def __init__(self, table_capacity=163, hash_base=31415):
+    def __init__(self, table_capacity=52361, hash_base=31415):
         self.table_capacity = table_capacity
         self.hash_base = hash_base
         self.count = 0
@@ -23,23 +20,21 @@ class HashTable:
             di += 1
 
     def __setitem__(self, key, item):
+        # 超过表长的一半则扩充表
+        if self.count >= self.table_capacity / 2:
+            self.rehash()
         di = 0
         while True:
             # 循环计算hash值
             key_hash = (self.hash(key) + di) % self.table_capacity
-            # 超过表长则扩充表
-            if key_hash > (self.table_capacity - 1) or self.count >= self.table_capacity:
-                self.rehash()
-                di = 0
-                continue
             # 查找到可以存放的位置
-            elif not self.table[key_hash]:
+            if not self.table[key_hash]:
                 self.table[key_hash] = (key, item)
                 self.count += 1
                 break
             elif self.table[key_hash] and key == self.table[key_hash][0]:
-                self.table[key_hash][1] = item
-                # raise KeyError
+                self.table[key_hash] = (key, self.table[key_hash][1] + item)
+                raise KeyError
             di += 1
         # raise NotImplementedError
 
@@ -88,3 +83,35 @@ class HashTable:
             self.__setitem__(k, v)
 
         # raise NotImplementedError
+
+class Freq:
+
+    def __init__(self):
+        self.maxum = 0
+        self.hash_table = HashTable()
+
+    def add_file(self, filename):
+        with open(filename, 'r', encoding='utf-8') as f:
+            for line in f.readlines():
+                words = re.split(r'[^a-zA-Z\-]+',line.strip().lower())
+                for word in words:
+                    w = word.strip()
+                    if w:
+                        try:
+                            self.hash_table[w] = 1
+                        except KeyError:
+                            times = self.hash_table[w]
+                            if times > self.maxum:
+                                self.maxum = times
+
+    def rarity(self, word):
+        word = word.lower()
+        if not word in self.hash_table:
+            return 3
+        times = self.hash_table[word]
+        if times >= self.maxum / 100:
+            return 0
+        elif times <= self.maxum / 1000:
+            return 2
+        else:
+            return 1

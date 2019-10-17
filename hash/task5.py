@@ -1,76 +1,129 @@
-class Node(object):
-    __slots__ = ['left', 'right', 'data', 'key']
- 
-    def __init__(self, data, left=None, right=None):
-        self.key = data[0]
-        self.data = data[1]
+#!/usr/bin/python3
+
+class BinaryTreeNode:
+
+    def __init__(self, key=None, value=None, left=None, right=None):
+        self.key = key
+        self.item = value
         self.left = left
         self.right = right
- 
+
     def __str__(self):
-        sl = '%s <-' % self.left if self.left else ''
-        sr = '-> %s' % self.right if self.right else ''
-        return '[%s Node(%s, %s) %s]' % (sl, self.key, self.data, sr)
- 
+        return " (" + str(self.key) +  ", " + str(self.item) + " ) "
+
+
 class BinarySearchTree:
+
     def __init__(self):
         self.root = None
- 
-    def insert(self, data):
-        node, parent = self.search(data[0], True)
-        if node:
-            raise ValueError('"%s" has been in tree.' % data)
- 
-        node = Node(data)
-        if parent is None:
-            self.root = node
-        elif data[0] < parent.key:
-            parent.left = node
+
+    def is_empty(self):
+        return self.root is None
+
+    def __len__(self):
+        return self._len_aux(self.root)
+
+    def _len_aux(self,current):
+        if current is None:
+            return 0
         else:
-            parent.right = node 
- 
-    def search(self, data, retParent=False):
-        parent = None
-        node = self.root
- 
-        while node and node.key != data[0]:
-            parent = node
-            if data[0] < node.key:
-                node = node.left
+            return 1+self._len_aux(current.left)+self._len_aux(current.right)
+
+    def inorder(self,f):
+        return self._inorder_aux(self.root,f)
+
+    def _inorder_aux(self,current,f):
+        if current is not None:
+            self._inorder_aux(current.left, f)
+            f(current)
+            self._inorder_aux(current.right, f)
+
+    def __contains__(self, key):
+        #return self._contains_aux(key, self.root)
+        return self._contains_iter(key)
+
+    def _contains_aux(self, key, current_node):
+        if current_node is None:  # base case
+            return False
+        elif key == current_node.key:
+                return True
+        elif key < current_node.key:
+            return self._contains_aux(key, current_node.left)
+        elif key > current_node.key:
+            return self._contains_aux(key, current_node.right)
+
+    def _contains_iter(self, key):
+        current_node = self.root
+        while current_node is not None:
+            if key < current_node.key:
+                current_node = current_node.left
+            elif key > current_node.key:
+                current_node = current_node.right
             else:
-                node = node.right
- 
-        return (node, parent) if retParent else node
- 
-    def delete(self, data):
-        self._deleteNode(*self.search(data, True))
- 
-    def _findBiggest(self, node):
-        parent = None
-        while node.right:
-            parent = node
-            node = node.right
-        return node, parent
- 
-    def _deleteNode(self, node, parent):
-        if node is None:
-            return 
- 
-        if node.left and node.right:
-            tmp, tmpParent = self._findBiggest(node.left)
-            if tmpParent is not None:
-                tmpParent.right = tmp.left
-                tmp.left = node.left 
-            tmp.right = node.right
-        else:
-            tmp = node.left or node.right
- 
-        if parent is None:
-            self.root = tmp
-        elif parent.left is node:
-            parent.left = tmp
-        else:
-            parent.right = tmp
+                return True
+        return False
+
+    def __getitem__(self, key):
+        return self._get_item_iter(key, self.root)
+
+    def _get_item_aux(self, key, current_node):
+        if current_node is None:  # base case
+            raise KeyError("Key not found")
+        elif key == current_node.key:
+                return current_node.item
+        elif key < current_node.key:
+            return self._get_item_aux(key, current_node.left)
+        elif key > current_node.key:
+            return self._get_item_aux(key, current_node.right)
+
+    def _get_item_iter(self, key, current_node):
+        while current_node is not None:
+          if key < current_node.key:
+            current_node = current_node.left
+          elif key > current_node.key:
+            current_node = current_node.right
+          else:
+            assert current_node.key == key
+            return current_node.item
+        raise KeyError("Key not found")
+
+    def __setitem__(self, key, value):
+        self._insert_iter(key, value)
+
+    def _insert_aux(self, key, value, current_node):
+        if current_node is None:
+            current_node = BinaryTreeNode(key, value)
+        elif key < current_node.key:
+            current_node.left =  self._insert_aux(key, value, current_node.left)
+        elif key > current_node.key:
+            current_node.right = self._insert_aux(key, value, current_node.right)
+        elif key == current_node.key:
+            current_node.item = value
+        return current_node
+
+    def _insert_iter(self, key, value):
+        if self.root is None:
+            self.root = BinaryTreeNode(key, value)
+            return
+
+        current_node = self.root
+        while True:
+          if key < current_node.key:
+            if current_node.left is None:
+              current_node.left = BinaryTreeNode(key, value)
+              break
+            else:
+              current_node = current_node.left
+          elif key > current_node.key:
+            if current_node.right is None:
+              current_node.right = BinaryTreeNode(key, value)
+              break
+            else:
+              current_node = current_node.right
+          else:
+            assert current_node.key == key
+            current_node.item = item
+            break
 
 
 class HashTable:
@@ -85,19 +138,20 @@ class HashTable:
         if not self.table[hash]:
             raise KeyError
         else:
-            res = self.table[hash].search()
-            if res:
-                return res.data
+            bst = self.table[hash]
+            if key in bst:
+                return bst[key]
             else:
                 raise KeyError
 
     def __setitem__(self, key, item):
         hash = self.hash(key)
         if self.table[hash]:
-            self.table[hash].insert((key, item))
+            self.table[hash][key] = item
         else:
             t = BinarySearchTree()
-            t.insert((key, item))
+            t[key] = item
+            self.table[hash] = t
         self.count += 1
 
     def __contains__(self, key):
@@ -105,11 +159,10 @@ class HashTable:
         if not self.table[hash]:
             return False
         else:
-            res = self.table[hash].search()
-            if res:
+            if key in self.table[hash]:
                 return True
             else:
-                raise False
+                return False
     
     def hash(self, key):
         if not isinstance(key, str):
@@ -166,11 +219,5 @@ class HashTable:
 #             f.write(line)
 #             f.write('\n')
 
-if __name__ == '__main__':
-    # t = BinarySearchTree()
-    # t.insert(('abc', 3))
-    # t.insert(('ddu', 5))
-    # t.insert(('kdiie', 7))
-    # t.insert(('kdh83',1))
-    # print(t.search(('kdiie', 7)).data)
-    table_load_dictionary_statistics(120)
+# if __name__ == '__main__':
+    # table_load_dictionary_statistics(120)

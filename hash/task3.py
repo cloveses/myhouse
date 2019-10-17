@@ -37,7 +37,8 @@ class HashTable:
                     self.probe_max = di
                 break
             elif self.table[key_hash] and key == self.table[key_hash][0]:
-                raise KeyError
+                self.table[key_hash][1] = item
+                # raise KeyError
             elif self.table[key_hash]:
                 self.collisions += 1
             di += 1
