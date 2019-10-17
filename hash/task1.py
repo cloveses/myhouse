@@ -14,8 +14,10 @@ class HashTable:
         di = 0
         while True:
             key_hash = (self.hash(key) + di) % self.table_capacity
+            # key_hash超出表的范围或对应位置为空
             if key_hash > self.table_capacity or not self.table[key_hash]:
                 raise KeyError
+            # hash位置不为空，key值相等代表查找到
             elif self.table[key_hash] and self.table[key_hash][0] == key:
                 return self.table[key_hash][1]
             di += 1
@@ -23,11 +25,14 @@ class HashTable:
     def __setitem__(self, key, item):
         di = 0
         while True:
+            # 循环计算hash值
             key_hash = (self.hash(key) + di) % self.table_capacity
+            # 超过表长则扩充表
             if key_hash > (self.table_capacity - 1) or self.count >= self.table_capacity:
                 self.rehash()
                 di = 0
                 continue
+            # 查找到可以存放的位置
             elif not self.table[key_hash]:
                 self.table[key_hash] = (key, item)
                 self.count += 1
@@ -52,9 +57,11 @@ class HashTable:
         # raise NotImplementedError
 
     def hash(self, key):
+        # key不是字符串，则抛出异常
         if not isinstance(key, str):
             raise TypeError
         value = 0
+        # 计算hash值
         for i in range(len(key)):
             value = (value*self.hash_base + ord(key[i])) % self.table_capacity
         return value

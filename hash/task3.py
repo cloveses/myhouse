@@ -4,7 +4,7 @@ class HashTable:
         self.hash_base = hash_base
         self.count = 0
         self.table = [None] * table_capacity
-
+        # 初始化相关参数
         self.collisions = 0
         self.probe_total = 0
         self.probe_max = 0
@@ -88,10 +88,12 @@ import time
 
 def load_dictionary(hash_table, filename, time_limit=None):
     start = time.time()
+    # 打开文件循环读取数据
     with open(filename, 'r', encoding='utf-8') as f:
         for line in f.readlines():
             word = line.strip()
             hash_table[word] = 1
+            # 验证与处理超时
             if time_limit:
                 duration = (time.time() - start)
                 if duration >= time_limit:
@@ -100,6 +102,7 @@ def load_dictionary(hash_table, filename, time_limit=None):
 
 
 def load_dictionary_statistics(hash_base, table_size, filename, max_time):
+    # 创建 hash 表
     hashtable = HashTable(table_capacity=table_size, hash_base=hash_base)
     try:
         duration = load_dictionary(hashtable, filename, max_time)
@@ -116,6 +119,7 @@ def table_load_dictionary_statistics(max_time):
     hash_bases = (1, 27183, 250726)
     table_sizes = (250727, 402221, 1000081)
     res = []
+    # 循环相关参数获取处理过程中所需要的值
     for file in files:
         for hash_base in hash_bases:
             for table_size in table_sizes:

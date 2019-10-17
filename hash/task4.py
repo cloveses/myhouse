@@ -24,7 +24,8 @@ class HashTable:
     def __setitem__(self, key, item):
         di = 0
         while True:
-            key_hash = (self.hash(key) + di) % self.table_capacity
+            qdi = ((-1) ** ((di + 1) % 2)) * (((di + 1) // 2) ** 2)
+            key_hash = (self.hash(key) + qdi) % self.table_capacity
             if key_hash > (self.table_capacity - 1) or self.count >= self.table_capacity:
                 self.rehash()
                 self.rehash_count += 1
@@ -46,7 +47,8 @@ class HashTable:
     def __contains__(self, key):
         di = 0
         while True:
-            key_hash = (self.hash(key) + di) % self.table_capacity
+            qdi = ((-1) ** ((di + 1) % 2)) * (((di + 1) // 2) ** 2)
+            key_hash = (self.hash(key) + qdi) % self.table_capacity
             if self.table[key_hash] and self.table[key_hash][0] == key:
                 return True
             elif key_hash > self.table_capacity:
