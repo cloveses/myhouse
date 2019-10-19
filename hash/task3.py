@@ -24,6 +24,8 @@ class HashTable:
         di = 0
         while True:
             key_hash = (self.hash(key) + di) % self.table_capacity
+            if di == 0 and self.table[key_hash]:
+                self.collisions += 1
             if key_hash > (self.table_capacity - 1) or self.count >= self.table_capacity:
                 self.rehash()
                 self.rehash_count += 1
@@ -39,8 +41,8 @@ class HashTable:
             elif self.table[key_hash] and key == self.table[key_hash][0]:
                 self.table[key_hash][1] = item
                 # raise KeyError
-            elif self.table[key_hash]:
-                self.collisions += 1
+            # elif self.table[key_hash]:
+            #     self.collisions += 1
             di += 1
 
     def __contains__(self, key):
@@ -111,7 +113,7 @@ def load_dictionary_statistics(hash_base, table_size, filename, max_time):
         res.extend(hashtable.statistics())
         return tuple(res)
     except TimeoutError:
-        res = [hashtable.count, None]
+        res = [hashtable.count, 'timeout']
         res.extend(hashtable.statistics())
         return tuple(res)
 
@@ -131,10 +133,13 @@ def table_load_dictionary_statistics(max_time):
                 res.append(datas)
                 print(datas)
     with open('output_task3.csv', 'w') as f:
+        f.write('''dictionary name,table size,b,
+            number of words added,time taken,number of collisions,
+            total probe,max probe,number of times of rehash\n''')
         for r in res:
             line = ','.join(r)
             f.write(line)
             f.write('\n')
 
 if __name__ == '__main__':
-    table_load_dictionary_statistics(120)
+    table_load_dictionary_statistics(30)
