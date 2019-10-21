@@ -135,9 +135,11 @@ class HashTable:
   
     def __getitem__(self, key):
         hash = self.hash(key)
+        # hash位置为None，则直接报错
         if not self.table[hash]:
             raise KeyError
         else:
+            # hash位置不为None，到bst中查找对应key
             bst = self.table[hash]
             if key in bst:
                 return bst[key]
@@ -146,9 +148,11 @@ class HashTable:
 
     def __setitem__(self, key, item):
         hash = self.hash(key)
+        # hash位置不为None，则直接插入该位置的bst
         if self.table[hash]:
             self.table[hash][key] = item
         else:
+            # hash位置为None，则先创建bst并插入数据后保存至hash位置
             t = BinarySearchTree()
             t[key] = item
             self.table[hash] = t
@@ -156,9 +160,11 @@ class HashTable:
 
     def __contains__(self, key):
         hash = self.hash(key)
+        # hash位置为None，则说明不存在
         if not self.table[hash]:
             return False
         else:
+            # hash位置不为None，则判断是否在对应位置的bst中
             if key in self.table[hash]:
                 return True
             else:
