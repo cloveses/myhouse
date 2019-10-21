@@ -13,8 +13,8 @@ class HashTable:
     def __getitem__(self, key):
         di = 0
         while True:
-            qdi = ((-1) ** ((di + 1) % 2)) * (((di + 1) // 2) ** 2)
-            key_hash = (self.hash(key) + qdi) % self.table_capacity
+            # qdi = ((-1) ** ((di + 1) % 2)) * (((di + 1) // 2) ** 2)
+            key_hash = (self.hash(key) + di**2) % self.table_capacity
             if key_hash > self.table_capacity or not self.table[key_hash]:
                 raise KeyError
             elif self.table[key_hash] and self.table[key_hash][0] == key:
