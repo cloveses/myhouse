@@ -136,4 +136,4 @@ def table_load_dictionary_statistics(max_time):
             f.write('\n')
 
 if __name__ == '__main__':
-    table_load_dictionary_statistics(120)
+    table_load_dictionary_statistics(60)
