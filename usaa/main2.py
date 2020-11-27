@@ -42,6 +42,13 @@ def write_image(imgfile, filename='raw_data.csv'):
             draw.text(points[name], str(data[4]), font=font,  fill = (255,0,0))
     img.save('s.jpg')
     img.close()
+    # print('dddd:',datas)
+    for i in range(len(datas)):
+        datas[i][4] = str(datas[i][4])
+        datas[i][6] = str(datas[i][6])
+    datas = [','.join(d) for d in datas]
+    with open('res_data.csv', 'w') as f:
+        f.write('\n'.join(datas))
 
 
 if __name__ == '__main__':
